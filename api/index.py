@@ -80,6 +80,26 @@ def health():
     return {"status": "ok", "version": "0.1.0"}
 
 
+@app.get("/api/debug/db")
+def debug_db(db: Session = Depends(get_db)):
+    from api.models.match import Match
+    from api.models.prediction import Prediction
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    total = db.query(Match).count()
+    scheduled = db.query(Match).filter(Match.status == "scheduled").count()
+    future = db.query(Match).filter(Match.status == "scheduled", Match.kickoff_utc >= now).count()
+    preds = db.query(Prediction).count()
+    return {
+        "db_url_prefix": settings.database_url[:30],
+        "total_matches": total,
+        "scheduled_matches": scheduled,
+        "future_scheduled": future,
+        "predictions": preds,
+        "now_utc": now.isoformat(),
+    }
+
+
 @app.post("/api/admin/fit")
 def trigger_fit(request: Request, db: Session = Depends(get_db)):
     """

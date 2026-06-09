@@ -51,9 +51,13 @@ UPCOMING_FIXTURES = [
 def _get_or_create_team(db: Session, name: str) -> Team:
     team = db.query(Team).filter(Team.name == name).first()
     if not team:
-        team = Team(name=name, country="England")
-        db.add(team)
-        db.flush()
+        try:
+            team = Team(name=name, country="England")
+            db.add(team)
+            db.flush()
+        except Exception:
+            db.rollback()
+            team = db.query(Team).filter(Team.name == name).first()
     return team
 
 
