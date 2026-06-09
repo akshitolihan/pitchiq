@@ -1,0 +1,795 @@
+{
+  "fixtures": [
+    {
+      "id": 381,
+      "home_team": "Arsenal",
+      "away_team": "Manchester City",
+      "home_elo": 1801.0,
+      "away_elo": 1844.0,
+      "home_attack": 0.3967,
+      "away_attack": 0.4583,
+      "kickoff_utc": "2026-06-10T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.4496,
+        "p_draw": 0.2762,
+        "p_away_win": 0.2741,
+        "p_over_2_5": 0.4413,
+        "p_under_2_5": 0.5587,
+        "p_btts": 0.4913,
+        "lambda_home": 1.4044,
+        "lambda_away": 1.0377,
+        "confidence": "Low",
+        "top_correct_scores": [
+          {
+            "score": "1-1",
+            "prob": 0.1308
+          },
+          {
+            "score": "1-0",
+            "prob": 0.1181
+          },
+          {
+            "score": "0-0",
+            "prob": 0.091
+          },
+          {
+            "score": "2-1",
+            "prob": 0.089
+          },
+          {
+            "score": "0-1",
+            "prob": 0.0862
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": -0.062,
+            "description": "Arsenal attack vs Manchester City defense: away side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "away"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": -0.169,
+            "description": "Defense comparison: away side concedes less.",
+            "positive_favours": "away"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": -0.108,
+            "description": "Elo ratings \u2014 Arsenal: 1800, Manchester City: 1844. Consistent with model.",
+            "positive_favours": "away"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.4266,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:02.969292"
+      }
+    },
+    {
+      "id": 382,
+      "home_team": "Liverpool",
+      "away_team": "Tottenham Hotspur",
+      "home_elo": 1686.0,
+      "away_elo": 1525.0,
+      "home_attack": 0.3379,
+      "away_attack": 0.188,
+      "kickoff_utc": "2026-06-11T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.6449,
+        "p_draw": 0.1862,
+        "p_away_win": 0.169,
+        "p_over_2_5": 0.7042,
+        "p_under_2_5": 0.2958,
+        "p_btts": 0.6398,
+        "lambda_home": 2.4438,
+        "lambda_away": 1.1973,
+        "confidence": "Medium",
+        "top_correct_scores": [
+          {
+            "score": "2-1",
+            "prob": 0.0938
+          },
+          {
+            "score": "1-1",
+            "prob": 0.0793
+          },
+          {
+            "score": "2-0",
+            "prob": 0.0784
+          },
+          {
+            "score": "3-1",
+            "prob": 0.0764
+          },
+          {
+            "score": "3-0",
+            "prob": 0.0639
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": 0.15,
+            "description": "Liverpool attack vs Tottenham Hotspur defense: home side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "home"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": -0.368,
+            "description": "Defense comparison: away side concedes less.",
+            "positive_favours": "away"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": 0.402,
+            "description": "Elo ratings \u2014 Liverpool: 1685, Tottenham Hotspur: 1524. Consistent with model.",
+            "positive_favours": "home"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.6326,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:02.995293"
+      }
+    },
+    {
+      "id": 383,
+      "home_team": "Manchester United",
+      "away_team": "Chelsea",
+      "home_elo": 1557.0,
+      "away_elo": 1653.0,
+      "home_attack": -0.0308,
+      "away_attack": 0.2802,
+      "kickoff_utc": "2026-06-12T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.3812,
+        "p_draw": 0.228,
+        "p_away_win": 0.3908,
+        "p_over_2_5": 0.6829,
+        "p_under_2_5": 0.3171,
+        "p_btts": 0.6885,
+        "lambda_home": 1.7486,
+        "lambda_away": 1.7721,
+        "confidence": "Low",
+        "top_correct_scores": [
+          {
+            "score": "1-1",
+            "prob": 0.0946
+          },
+          {
+            "score": "1-2",
+            "prob": 0.0812
+          },
+          {
+            "score": "2-1",
+            "prob": 0.0802
+          },
+          {
+            "score": "2-2",
+            "prob": 0.071
+          },
+          {
+            "score": "0-1",
+            "prob": 0.0495
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": -0.311,
+            "description": "Manchester United attack vs Chelsea defense: away side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "away"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": -0.102,
+            "description": "Defense comparison: away side concedes less.",
+            "positive_favours": "away"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": -0.24,
+            "description": "Elo ratings \u2014 Manchester United: 1556, Chelsea: 1652. Consistent with model.",
+            "positive_favours": "away"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.3804,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:03.023720"
+      }
+    },
+    {
+      "id": 384,
+      "home_team": "Newcastle United",
+      "away_team": "Aston Villa",
+      "home_elo": 1584.0,
+      "away_elo": 1554.0,
+      "home_attack": 0.3494,
+      "away_attack": 0.2169,
+      "kickoff_utc": "2026-06-13T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.5227,
+        "p_draw": 0.1941,
+        "p_away_win": 0.2832,
+        "p_over_2_5": 0.8052,
+        "p_under_2_5": 0.1948,
+        "p_btts": 0.7723,
+        "lambda_home": 2.488,
+        "lambda_away": 1.8341,
+        "confidence": "Medium",
+        "top_correct_scores": [
+          {
+            "score": "2-1",
+            "prob": 0.0754
+          },
+          {
+            "score": "2-2",
+            "prob": 0.0692
+          },
+          {
+            "score": "1-1",
+            "prob": 0.0626
+          },
+          {
+            "score": "3-1",
+            "prob": 0.0626
+          },
+          {
+            "score": "3-2",
+            "prob": 0.0574
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": 0.132,
+            "description": "Newcastle United attack vs Aston Villa defense: home side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "home"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": 0.023,
+            "description": "Defense comparison: home side concedes less.",
+            "positive_favours": "home"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": 0.075,
+            "description": "Elo ratings \u2014 Newcastle United: 1584, Aston Villa: 1553. Consistent with model.",
+            "positive_favours": "home"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.4957,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:03.039725"
+      }
+    },
+    {
+      "id": 385,
+      "home_team": "Brighton & Hove Albion",
+      "away_team": "Wolverhampton",
+      "home_elo": 1415.0,
+      "away_elo": 1381.0,
+      "home_attack": -0.1545,
+      "away_attack": -0.2065,
+      "kickoff_utc": "2026-06-14T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.4632,
+        "p_draw": 0.2606,
+        "p_away_win": 0.2762,
+        "p_over_2_5": 0.5023,
+        "p_under_2_5": 0.4977,
+        "p_btts": 0.5385,
+        "lambda_home": 1.5454,
+        "lambda_away": 1.138,
+        "confidence": "Medium",
+        "top_correct_scores": [
+          {
+            "score": "1-1",
+            "prob": 0.124
+          },
+          {
+            "score": "1-0",
+            "prob": 0.1018
+          },
+          {
+            "score": "2-1",
+            "prob": 0.0929
+          },
+          {
+            "score": "2-0",
+            "prob": 0.0816
+          },
+          {
+            "score": "0-1",
+            "prob": 0.0739
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": 0.052,
+            "description": "Brighton & Hove Albion attack vs Wolverhampton defense: home side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "home"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": -0.058,
+            "description": "Defense comparison: away side concedes less.",
+            "positive_favours": "away"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": 0.084,
+            "description": "Elo ratings \u2014 Brighton & Hove Albion: 1415, Wolverhampton: 1381. Consistent with model.",
+            "positive_favours": "home"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.4998,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:03.065252"
+      }
+    },
+    {
+      "id": 386,
+      "home_team": "Fulham",
+      "away_team": "Brentford",
+      "home_elo": 1485.0,
+      "away_elo": 1422.0,
+      "home_attack": -0.0802,
+      "away_attack": -0.0713,
+      "kickoff_utc": "2026-06-15T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.4599,
+        "p_draw": 0.2468,
+        "p_away_win": 0.2933,
+        "p_over_2_5": 0.5701,
+        "p_under_2_5": 0.4299,
+        "p_btts": 0.5937,
+        "lambda_home": 1.6747,
+        "lambda_away": 1.2955,
+        "confidence": "Medium",
+        "top_correct_scores": [
+          {
+            "score": "1-1",
+            "prob": 0.1149
+          },
+          {
+            "score": "2-1",
+            "prob": 0.0932
+          },
+          {
+            "score": "1-0",
+            "prob": 0.0823
+          },
+          {
+            "score": "1-2",
+            "prob": 0.0721
+          },
+          {
+            "score": "2-0",
+            "prob": 0.0719
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": -0.009,
+            "description": "Fulham attack vs Brentford defense: away side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "away"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": -0.07,
+            "description": "Defense comparison: away side concedes less.",
+            "positive_favours": "away"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": 0.157,
+            "description": "Elo ratings \u2014 Fulham: 1485, Brentford: 1422. Consistent with model.",
+            "positive_favours": "home"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.5325,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:03.103239"
+      }
+    },
+    {
+      "id": 387,
+      "home_team": "Crystal Palace",
+      "away_team": "Everton",
+      "home_elo": 1589.0,
+      "away_elo": 1492.0,
+      "home_attack": -0.0015,
+      "away_attack": -0.426,
+      "kickoff_utc": "2026-06-16T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.4855,
+        "p_draw": 0.2848,
+        "p_away_win": 0.2297,
+        "p_over_2_5": 0.3846,
+        "p_under_2_5": 0.6154,
+        "p_btts": 0.4331,
+        "lambda_home": 1.3722,
+        "lambda_away": 0.855,
+        "confidence": "Medium",
+        "top_correct_scores": [
+          {
+            "score": "1-0",
+            "prob": 0.1439
+          },
+          {
+            "score": "1-1",
+            "prob": 0.1306
+          },
+          {
+            "score": "0-0",
+            "prob": 0.1119
+          },
+          {
+            "score": "2-0",
+            "prob": 0.1015
+          },
+          {
+            "score": "0-1",
+            "prob": 0.0881
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": 0.424,
+            "description": "Crystal Palace attack vs Everton defense: home side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "home"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": 0.147,
+            "description": "Defense comparison: home side concedes less.",
+            "positive_favours": "home"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": 0.242,
+            "description": "Elo ratings \u2014 Crystal Palace: 1588, Everton: 1492. Consistent with model.",
+            "positive_favours": "home"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.569,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:03.127917"
+      }
+    },
+    {
+      "id": 388,
+      "home_team": "Nottingham Forest",
+      "away_team": "West Ham United",
+      "home_elo": 1404.0,
+      "away_elo": 1438.0,
+      "home_attack": -0.1918,
+      "away_attack": 0.0016,
+      "kickoff_utc": "2026-06-17T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.4251,
+        "p_draw": 0.2363,
+        "p_away_win": 0.3386,
+        "p_over_2_5": 0.6363,
+        "p_under_2_5": 0.3637,
+        "p_btts": 0.6507,
+        "lambda_home": 1.7421,
+        "lambda_away": 1.5369,
+        "confidence": "Low",
+        "top_correct_scores": [
+          {
+            "score": "1-1",
+            "prob": 0.1041
+          },
+          {
+            "score": "2-1",
+            "prob": 0.0879
+          },
+          {
+            "score": "1-2",
+            "prob": 0.0775
+          },
+          {
+            "score": "2-2",
+            "prob": 0.0675
+          },
+          {
+            "score": "1-0",
+            "prob": 0.0624
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": -0.193,
+            "description": "Nottingham Forest attack vs West Ham United defense: away side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "away"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": -0.123,
+            "description": "Defense comparison: away side concedes less.",
+            "positive_favours": "away"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": -0.087,
+            "description": "Elo ratings \u2014 Nottingham Forest: 1403, West Ham United: 1438. Consistent with model.",
+            "positive_favours": "away"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.4336,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:03.139922"
+      }
+    },
+    {
+      "id": 389,
+      "home_team": "Bournemouth",
+      "away_team": "Luton",
+      "home_elo": 1465.0,
+      "away_elo": 1259.0,
+      "home_attack": -0.0962,
+      "away_attack": -0.1124,
+      "kickoff_utc": "2026-06-18T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.5607,
+        "p_draw": 0.21,
+        "p_away_win": 0.2292,
+        "p_over_2_5": 0.6823,
+        "p_under_2_5": 0.3177,
+        "p_btts": 0.6578,
+        "lambda_home": 2.1742,
+        "lambda_away": 1.3438,
+        "confidence": "Medium",
+        "top_correct_scores": [
+          {
+            "score": "2-1",
+            "prob": 0.0942
+          },
+          {
+            "score": "1-1",
+            "prob": 0.0895
+          },
+          {
+            "score": "2-0",
+            "prob": 0.0701
+          },
+          {
+            "score": "3-1",
+            "prob": 0.0683
+          },
+          {
+            "score": "2-2",
+            "prob": 0.0633
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": 0.016,
+            "description": "Bournemouth attack vs Luton defense: home side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "home"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": -0.27,
+            "description": "Defense comparison: away side concedes less.",
+            "positive_favours": "away"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": 0.516,
+            "description": "Elo ratings \u2014 Bournemouth: 1465, Luton: 1259. Notable Elo gap \u2014 treat with care.",
+            "positive_favours": "home"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.6732,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:03.173175"
+      }
+    },
+    {
+      "id": 390,
+      "home_team": "Burnley",
+      "away_team": "Sheffield Utd",
+      "home_elo": 1289.0,
+      "away_elo": 1157.0,
+      "home_attack": -0.3578,
+      "away_attack": -0.5,
+      "kickoff_utc": "2026-06-19T15:00:00",
+      "status": "scheduled",
+      "prediction": {
+        "p_home_win": 0.5907,
+        "p_draw": 0.2187,
+        "p_away_win": 0.1905,
+        "p_over_2_5": 0.5912,
+        "p_under_2_5": 0.4088,
+        "p_btts": 0.5681,
+        "lambda_home": 2.0085,
+        "lambda_away": 1.0571,
+        "confidence": "Medium",
+        "top_correct_scores": [
+          {
+            "score": "1-1",
+            "prob": 0.1022
+          },
+          {
+            "score": "2-1",
+            "prob": 0.0994
+          },
+          {
+            "score": "2-0",
+            "prob": 0.0941
+          },
+          {
+            "score": "1-0",
+            "prob": 0.0905
+          },
+          {
+            "score": "3-1",
+            "prob": 0.0666
+          }
+        ],
+        "drivers": {
+          "team_strength": {
+            "label": "Team strength (attack edge)",
+            "value": 0.142,
+            "description": "Burnley attack vs Sheffield Utd defense: home side has the edge. Based on season-long Dixon-Coles fit.",
+            "positive_favours": "home"
+          },
+          "defensive_solidity": {
+            "label": "Defensive edge",
+            "value": -0.304,
+            "description": "Defense comparison: away side concedes less.",
+            "positive_favours": "away"
+          },
+          "home_advantage": {
+            "label": "Home advantage",
+            "value": 0.196,
+            "description": "League home-advantage parameter \u03b3=0.196. Adds to the home side's expected goals.",
+            "positive_favours": "home"
+          },
+          "elo_cross_check": {
+            "label": "Elo cross-check",
+            "value": 0.33,
+            "description": "Elo ratings \u2014 Burnley: 1288, Sheffield Utd: 1156. Consistent with model.",
+            "positive_favours": "home"
+          },
+          "data_completeness": {
+            "label": "Data completeness",
+            "value": 1.0,
+            "description": "Model trained on 380 matches. Sufficient data.",
+            "positive_favours": "neutral"
+          }
+        },
+        "elo_home_win_prob": 0.6048,
+        "model_version": "dixon-coles-v1",
+        "generated_at": "2026-06-09T14:17:03.208265"
+      }
+    }
+  ],
+  "total": 10
+}

@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+*.so
+.pytest_cache/
+
+# DB
+*.db
+*.sqlite
+*.sqlite3
+
+# Keep generated static data in version control so Vercel deploy has it
+# src/data/fixtures.json is intentionally tracked
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+.next/
+out/
+frontend/.next/
+frontend/node_modules/
+frontend/out/
+
+# Vercel
+.vercel/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic — keep versions, ignore compiled
+alembic/versions/__pycache__/
+
+.vercel
+
+.vercel
