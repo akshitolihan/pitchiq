@@ -13,5 +13,5 @@ venv/
 .env
 .env.local
 tests/
-data/
+/data/
 *.md
