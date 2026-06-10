@@ -5,6 +5,9 @@ import ConfidenceBadge from "@/components/ConfidenceBadge";
 import DriverBreakdown from "@/components/DriverBreakdown";
 import type { MatchDetail } from "@/lib/api";
 
+export const dynamic = "force-static";
+export const dynamicParams = false;
+
 function getMatchFromStatic(id: string): MatchDetail | null {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
