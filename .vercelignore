@@ -15,3 +15,6 @@ venv/
 tests/
 /data/
 *.md
+requirements.txt
+/api/
+/scripts/

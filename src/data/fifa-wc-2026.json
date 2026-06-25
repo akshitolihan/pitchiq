@@ -1,0 +1,231 @@
+{
+  "tournament": {
+    "name": "FIFA World Cup 2026",
+    "slogan": "We Are 16",
+    "hosts": ["United States", "Mexico", "Canada"],
+    "dates": "11 June – 19 July 2026",
+    "teams": 48,
+    "matches": 104,
+    "venues": 16,
+    "final_venue": "MetLife Stadium, East Rutherford NJ",
+    "opening_venue": "Estadio Azteca, Mexico City"
+  },
+  "groups": [
+    {
+      "id": "A",
+      "teams": [
+        {"name": "United States", "flag": "🇺🇸", "confederation": "CONCACAF"},
+        {"name": "Italy", "flag": "🇮🇹", "confederation": "UEFA"},
+        {"name": "Morocco", "flag": "🇲🇦", "confederation": "CAF"},
+        {"name": "Panama", "flag": "🇵🇦", "confederation": "CONCACAF"}
+      ]
+    },
+    {
+      "id": "B",
+      "teams": [
+        {"name": "Mexico", "flag": "🇲🇽", "confederation": "CONCACAF"},
+        {"name": "Japan", "flag": "🇯🇵", "confederation": "AFC"},
+        {"name": "Colombia", "flag": "🇨🇴", "confederation": "CONMEBOL"},
+        {"name": "Honduras", "flag": "🇭🇳", "confederation": "CONCACAF"}
+      ]
+    },
+    {
+      "id": "C",
+      "teams": [
+        {"name": "Canada", "flag": "🇨🇦", "confederation": "CONCACAF"},
+        {"name": "Turkey", "flag": "🇹🇷", "confederation": "UEFA"},
+        {"name": "Senegal", "flag": "🇸🇳", "confederation": "CAF"},
+        {"name": "Venezuela", "flag": "🇻🇪", "confederation": "CONMEBOL"}
+      ]
+    },
+    {
+      "id": "D",
+      "teams": [
+        {"name": "Argentina", "flag": "🇦🇷", "confederation": "CONMEBOL"},
+        {"name": "Denmark", "flag": "🇩🇰", "confederation": "UEFA"},
+        {"name": "Nigeria", "flag": "🇳🇬", "confederation": "CAF"},
+        {"name": "Ukraine", "flag": "🇺🇦", "confederation": "UEFA"}
+      ]
+    },
+    {
+      "id": "E",
+      "teams": [
+        {"name": "Brazil", "flag": "🇧🇷", "confederation": "CONMEBOL"},
+        {"name": "South Korea", "flag": "🇰🇷", "confederation": "AFC"},
+        {"name": "Australia", "flag": "🇦🇺", "confederation": "AFC"},
+        {"name": "Costa Rica", "flag": "🇨🇷", "confederation": "CONCACAF"}
+      ]
+    },
+    {
+      "id": "F",
+      "teams": [
+        {"name": "France", "flag": "🇫🇷", "confederation": "UEFA"},
+        {"name": "Croatia", "flag": "🇭🇷", "confederation": "UEFA"},
+        {"name": "Egypt", "flag": "🇪🇬", "confederation": "CAF"},
+        {"name": "New Zealand", "flag": "🇳🇿", "confederation": "OFC"}
+      ]
+    },
+    {
+      "id": "G",
+      "teams": [
+        {"name": "Spain", "flag": "🇪🇸", "confederation": "UEFA"},
+        {"name": "Switzerland", "flag": "🇨🇭", "confederation": "UEFA"},
+        {"name": "Cameroon", "flag": "🇨🇲", "confederation": "CAF"},
+        {"name": "Chile", "flag": "🇨🇱", "confederation": "CONMEBOL"}
+      ]
+    },
+    {
+      "id": "H",
+      "teams": [
+        {"name": "Germany", "flag": "🇩🇪", "confederation": "UEFA"},
+        {"name": "Uruguay", "flag": "🇺🇾", "confederation": "CONMEBOL"},
+        {"name": "Iran", "flag": "🇮🇷", "confederation": "AFC"},
+        {"name": "Jamaica", "flag": "🇯🇲", "confederation": "CONCACAF"}
+      ]
+    },
+    {
+      "id": "I",
+      "teams": [
+        {"name": "England", "flag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "confederation": "UEFA"},
+        {"name": "Scotland", "flag": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "confederation": "UEFA"},
+        {"name": "South Africa", "flag": "🇿🇦", "confederation": "CAF"},
+        {"name": "Iraq", "flag": "🇮🇶", "confederation": "AFC"}
+      ]
+    },
+    {
+      "id": "J",
+      "teams": [
+        {"name": "Portugal", "flag": "🇵🇹", "confederation": "UEFA"},
+        {"name": "Serbia", "flag": "🇷🇸", "confederation": "UEFA"},
+        {"name": "Saudi Arabia", "flag": "🇸🇦", "confederation": "AFC"},
+        {"name": "Indonesia", "flag": "🇮🇩", "confederation": "AFC"}
+      ]
+    },
+    {
+      "id": "K",
+      "teams": [
+        {"name": "Netherlands", "flag": "🇳🇱", "confederation": "UEFA"},
+        {"name": "Austria", "flag": "🇦🇹", "confederation": "UEFA"},
+        {"name": "Ivory Coast", "flag": "🇨🇮", "confederation": "CAF"},
+        {"name": "Paraguay", "flag": "🇵🇾", "confederation": "CONMEBOL"}
+      ]
+    },
+    {
+      "id": "L",
+      "teams": [
+        {"name": "Belgium", "flag": "🇧🇪", "confederation": "UEFA"},
+        {"name": "Poland", "flag": "🇵🇱", "confederation": "UEFA"},
+        {"name": "Mali", "flag": "🇲🇱", "confederation": "CAF"},
+        {"name": "Ecuador", "flag": "🇪🇨", "confederation": "CONMEBOL"}
+      ]
+    }
+  ],
+  "matches": [
+    {"id":"B1","group":"B","matchday":1,"home":"Mexico","away":"Colombia","kickoff_utc":"2026-06-11T22:00:00Z","venue":"Estadio Azteca","city":"Mexico City","status":"scheduled","score":null},
+    {"id":"B2","group":"B","matchday":1,"home":"Japan","away":"Honduras","kickoff_utc":"2026-06-12T01:00:00Z","venue":"Estadio BBVA","city":"Monterrey","status":"scheduled","score":null},
+    {"id":"A1","group":"A","matchday":1,"home":"United States","away":"Morocco","kickoff_utc":"2026-06-12T19:00:00Z","venue":"MetLife Stadium","city":"East Rutherford, NJ","status":"scheduled","score":null},
+    {"id":"A2","group":"A","matchday":1,"home":"Italy","away":"Panama","kickoff_utc":"2026-06-12T22:00:00Z","venue":"Levi's Stadium","city":"Santa Clara, CA","status":"scheduled","score":null},
+    {"id":"C1","group":"C","matchday":1,"home":"Canada","away":"Turkey","kickoff_utc":"2026-06-13T22:00:00Z","venue":"BC Place","city":"Vancouver","status":"scheduled","score":null},
+    {"id":"C2","group":"C","matchday":1,"home":"Senegal","away":"Venezuela","kickoff_utc":"2026-06-14T01:00:00Z","venue":"BMO Field","city":"Toronto","status":"scheduled","score":null},
+    {"id":"D1","group":"D","matchday":1,"home":"Argentina","away":"Denmark","kickoff_utc":"2026-06-13T19:00:00Z","venue":"Rose Bowl","city":"Pasadena, CA","status":"scheduled","score":null},
+    {"id":"D2","group":"D","matchday":1,"home":"Nigeria","away":"Ukraine","kickoff_utc":"2026-06-13T22:00:00Z","venue":"AT&T Stadium","city":"Arlington, TX","status":"scheduled","score":null},
+    {"id":"E1","group":"E","matchday":1,"home":"Brazil","away":"South Korea","kickoff_utc":"2026-06-14T19:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens, FL","status":"scheduled","score":null},
+    {"id":"E2","group":"E","matchday":1,"home":"Australia","away":"Costa Rica","kickoff_utc":"2026-06-14T22:00:00Z","venue":"Arrowhead Stadium","city":"Kansas City, MO","status":"scheduled","score":null},
+    {"id":"F1","group":"F","matchday":1,"home":"France","away":"Egypt","kickoff_utc":"2026-06-15T19:00:00Z","venue":"Lincoln Financial Field","city":"Philadelphia, PA","status":"scheduled","score":null},
+    {"id":"F2","group":"F","matchday":1,"home":"Croatia","away":"New Zealand","kickoff_utc":"2026-06-15T22:00:00Z","venue":"Lumen Field","city":"Seattle, WA","status":"scheduled","score":null},
+    {"id":"G1","group":"G","matchday":1,"home":"Spain","away":"Cameroon","kickoff_utc":"2026-06-16T19:00:00Z","venue":"Allegiant Stadium","city":"Las Vegas, NV","status":"scheduled","score":null},
+    {"id":"G2","group":"G","matchday":1,"home":"Switzerland","away":"Chile","kickoff_utc":"2026-06-16T22:00:00Z","venue":"AT&T Stadium","city":"Arlington, TX","status":"scheduled","score":null},
+    {"id":"H1","group":"H","matchday":1,"home":"Germany","away":"Iran","kickoff_utc":"2026-06-17T19:00:00Z","venue":"SoFi Stadium","city":"Inglewood, CA","status":"scheduled","score":null},
+    {"id":"H2","group":"H","matchday":1,"home":"Uruguay","away":"Jamaica","kickoff_utc":"2026-06-17T22:00:00Z","venue":"Gillette Stadium","city":"Foxborough, MA","status":"scheduled","score":null},
+    {"id":"I1","group":"I","matchday":1,"home":"England","away":"South Africa","kickoff_utc":"2026-06-18T19:00:00Z","venue":"MetLife Stadium","city":"East Rutherford, NJ","status":"scheduled","score":null},
+    {"id":"I2","group":"I","matchday":1,"home":"Scotland","away":"Iraq","kickoff_utc":"2026-06-18T22:00:00Z","venue":"Rose Bowl","city":"Pasadena, CA","status":"scheduled","score":null},
+    {"id":"J1","group":"J","matchday":1,"home":"Portugal","away":"Saudi Arabia","kickoff_utc":"2026-06-19T19:00:00Z","venue":"Levi's Stadium","city":"Santa Clara, CA","status":"scheduled","score":null},
+    {"id":"J2","group":"J","matchday":1,"home":"Serbia","away":"Indonesia","kickoff_utc":"2026-06-19T22:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens, FL","status":"scheduled","score":null},
+    {"id":"K1","group":"K","matchday":1,"home":"Netherlands","away":"Ivory Coast","kickoff_utc":"2026-06-20T19:00:00Z","venue":"Lincoln Financial Field","city":"Philadelphia, PA","status":"scheduled","score":null},
+    {"id":"K2","group":"K","matchday":1,"home":"Austria","away":"Paraguay","kickoff_utc":"2026-06-20T22:00:00Z","venue":"Lumen Field","city":"Seattle, WA","status":"scheduled","score":null},
+    {"id":"L1","group":"L","matchday":1,"home":"Belgium","away":"Mali","kickoff_utc":"2026-06-21T19:00:00Z","venue":"Arrowhead Stadium","city":"Kansas City, MO","status":"scheduled","score":null},
+    {"id":"L2","group":"L","matchday":1,"home":"Poland","away":"Ecuador","kickoff_utc":"2026-06-21T22:00:00Z","venue":"Allegiant Stadium","city":"Las Vegas, NV","status":"scheduled","score":null},
+
+    {"id":"A3","group":"A","matchday":2,"home":"United States","away":"Italy","kickoff_utc":"2026-06-16T22:00:00Z","venue":"Rose Bowl","city":"Pasadena, CA","status":"scheduled","score":null},
+    {"id":"A4","group":"A","matchday":2,"home":"Morocco","away":"Panama","kickoff_utc":"2026-06-16T22:00:00Z","venue":"SoFi Stadium","city":"Inglewood, CA","status":"scheduled","score":null},
+    {"id":"B3","group":"B","matchday":2,"home":"Mexico","away":"Japan","kickoff_utc":"2026-06-17T22:00:00Z","venue":"Estadio Akron","city":"Guadalajara","status":"scheduled","score":null},
+    {"id":"B4","group":"B","matchday":2,"home":"Colombia","away":"Honduras","kickoff_utc":"2026-06-17T22:00:00Z","venue":"Estadio BBVA","city":"Monterrey","status":"scheduled","score":null},
+    {"id":"C3","group":"C","matchday":2,"home":"Canada","away":"Senegal","kickoff_utc":"2026-06-18T22:00:00Z","venue":"BC Place","city":"Vancouver","status":"scheduled","score":null},
+    {"id":"C4","group":"C","matchday":2,"home":"Turkey","away":"Venezuela","kickoff_utc":"2026-06-18T22:00:00Z","venue":"BMO Field","city":"Toronto","status":"scheduled","score":null},
+    {"id":"D3","group":"D","matchday":2,"home":"Argentina","away":"Nigeria","kickoff_utc":"2026-06-19T19:00:00Z","venue":"AT&T Stadium","city":"Arlington, TX","status":"scheduled","score":null},
+    {"id":"D4","group":"D","matchday":2,"home":"Denmark","away":"Ukraine","kickoff_utc":"2026-06-20T01:00:00Z","venue":"Arrowhead Stadium","city":"Kansas City, MO","status":"scheduled","score":null},
+    {"id":"E3","group":"E","matchday":2,"home":"Brazil","away":"Australia","kickoff_utc":"2026-06-20T22:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens, FL","status":"scheduled","score":null},
+    {"id":"E4","group":"E","matchday":2,"home":"South Korea","away":"Costa Rica","kickoff_utc":"2026-06-20T22:00:00Z","venue":"Gillette Stadium","city":"Foxborough, MA","status":"scheduled","score":null},
+    {"id":"F3","group":"F","matchday":2,"home":"France","away":"Croatia","kickoff_utc":"2026-06-21T22:00:00Z","venue":"MetLife Stadium","city":"East Rutherford, NJ","status":"scheduled","score":null},
+    {"id":"F4","group":"F","matchday":2,"home":"Egypt","away":"New Zealand","kickoff_utc":"2026-06-21T22:00:00Z","venue":"Lincoln Financial Field","city":"Philadelphia, PA","status":"scheduled","score":null},
+    {"id":"G3","group":"G","matchday":2,"home":"Spain","away":"Switzerland","kickoff_utc":"2026-06-22T19:00:00Z","venue":"SoFi Stadium","city":"Inglewood, CA","status":"scheduled","score":null},
+    {"id":"G4","group":"G","matchday":2,"home":"Cameroon","away":"Chile","kickoff_utc":"2026-06-22T22:00:00Z","venue":"Levi's Stadium","city":"Santa Clara, CA","status":"scheduled","score":null},
+    {"id":"H3","group":"H","matchday":2,"home":"Germany","away":"Uruguay","kickoff_utc":"2026-06-22T22:00:00Z","venue":"Rose Bowl","city":"Pasadena, CA","status":"scheduled","score":null},
+    {"id":"H4","group":"H","matchday":2,"home":"Iran","away":"Jamaica","kickoff_utc":"2026-06-23T01:00:00Z","venue":"Allegiant Stadium","city":"Las Vegas, NV","status":"scheduled","score":null},
+    {"id":"I3","group":"I","matchday":2,"home":"England","away":"Iraq","kickoff_utc":"2026-06-23T19:00:00Z","venue":"Lumen Field","city":"Seattle, WA","status":"scheduled","score":null},
+    {"id":"I4","group":"I","matchday":2,"home":"Scotland","away":"South Africa","kickoff_utc":"2026-06-23T22:00:00Z","venue":"AT&T Stadium","city":"Arlington, TX","status":"scheduled","score":null},
+    {"id":"J3","group":"J","matchday":2,"home":"Portugal","away":"Indonesia","kickoff_utc":"2026-06-24T19:00:00Z","venue":"Arrowhead Stadium","city":"Kansas City, MO","status":"scheduled","score":null},
+    {"id":"J4","group":"J","matchday":2,"home":"Serbia","away":"Saudi Arabia","kickoff_utc":"2026-06-24T22:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens, FL","status":"scheduled","score":null},
+    {"id":"K3","group":"K","matchday":2,"home":"Netherlands","away":"Paraguay","kickoff_utc":"2026-06-25T19:00:00Z","venue":"MetLife Stadium","city":"East Rutherford, NJ","status":"scheduled","score":null},
+    {"id":"K4","group":"K","matchday":2,"home":"Austria","away":"Ivory Coast","kickoff_utc":"2026-06-25T22:00:00Z","venue":"Gillette Stadium","city":"Foxborough, MA","status":"scheduled","score":null},
+    {"id":"L3","group":"L","matchday":2,"home":"Belgium","away":"Poland","kickoff_utc":"2026-06-26T19:00:00Z","venue":"Lincoln Financial Field","city":"Philadelphia, PA","status":"scheduled","score":null},
+    {"id":"L4","group":"L","matchday":2,"home":"Mali","away":"Ecuador","kickoff_utc":"2026-06-26T22:00:00Z","venue":"Lumen Field","city":"Seattle, WA","status":"scheduled","score":null},
+
+    {"id":"A5","group":"A","matchday":3,"home":"Italy","away":"Morocco","kickoff_utc":"2026-06-23T22:00:00Z","venue":"SoFi Stadium","city":"Inglewood, CA","status":"scheduled","score":null},
+    {"id":"A6","group":"A","matchday":3,"home":"Panama","away":"United States","kickoff_utc":"2026-06-23T22:00:00Z","venue":"Allegiant Stadium","city":"Las Vegas, NV","status":"scheduled","score":null},
+    {"id":"B5","group":"B","matchday":3,"home":"Colombia","away":"Mexico","kickoff_utc":"2026-06-24T22:00:00Z","venue":"Estadio Azteca","city":"Mexico City","status":"scheduled","score":null},
+    {"id":"B6","group":"B","matchday":3,"home":"Honduras","away":"Japan","kickoff_utc":"2026-06-24T22:00:00Z","venue":"Estadio Akron","city":"Guadalajara","status":"scheduled","score":null},
+    {"id":"C5","group":"C","matchday":3,"home":"Turkey","away":"Canada","kickoff_utc":"2026-06-25T22:00:00Z","venue":"BMO Field","city":"Toronto","status":"scheduled","score":null},
+    {"id":"C6","group":"C","matchday":3,"home":"Venezuela","away":"Senegal","kickoff_utc":"2026-06-25T22:00:00Z","venue":"BC Place","city":"Vancouver","status":"scheduled","score":null},
+    {"id":"D5","group":"D","matchday":3,"home":"Denmark","away":"Argentina","kickoff_utc":"2026-06-26T22:00:00Z","venue":"Rose Bowl","city":"Pasadena, CA","status":"scheduled","score":null},
+    {"id":"D6","group":"D","matchday":3,"home":"Ukraine","away":"Nigeria","kickoff_utc":"2026-06-26T22:00:00Z","venue":"Levi's Stadium","city":"Santa Clara, CA","status":"scheduled","score":null},
+    {"id":"E5","group":"E","matchday":3,"home":"South Korea","away":"Brazil","kickoff_utc":"2026-06-27T22:00:00Z","venue":"AT&T Stadium","city":"Arlington, TX","status":"scheduled","score":null},
+    {"id":"E6","group":"E","matchday":3,"home":"Costa Rica","away":"Australia","kickoff_utc":"2026-06-27T22:00:00Z","venue":"Arrowhead Stadium","city":"Kansas City, MO","status":"scheduled","score":null},
+    {"id":"F5","group":"F","matchday":3,"home":"Egypt","away":"France","kickoff_utc":"2026-06-27T19:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens, FL","status":"scheduled","score":null},
+    {"id":"F6","group":"F","matchday":3,"home":"New Zealand","away":"Croatia","kickoff_utc":"2026-06-27T19:00:00Z","venue":"Gillette Stadium","city":"Foxborough, MA","status":"scheduled","score":null},
+    {"id":"G5","group":"G","matchday":3,"home":"Cameroon","away":"Spain","kickoff_utc":"2026-06-28T22:00:00Z","venue":"MetLife Stadium","city":"East Rutherford, NJ","status":"scheduled","score":null},
+    {"id":"G6","group":"G","matchday":3,"home":"Chile","away":"Switzerland","kickoff_utc":"2026-06-28T22:00:00Z","venue":"Lincoln Financial Field","city":"Philadelphia, PA","status":"scheduled","score":null},
+    {"id":"H5","group":"H","matchday":3,"home":"Uruguay","away":"Germany","kickoff_utc":"2026-06-28T19:00:00Z","venue":"Lumen Field","city":"Seattle, WA","status":"scheduled","score":null},
+    {"id":"H6","group":"H","matchday":3,"home":"Jamaica","away":"Iran","kickoff_utc":"2026-06-28T19:00:00Z","venue":"SoFi Stadium","city":"Inglewood, CA","status":"scheduled","score":null},
+    {"id":"I5","group":"I","matchday":3,"home":"South Africa","away":"England","kickoff_utc":"2026-06-29T22:00:00Z","venue":"Rose Bowl","city":"Pasadena, CA","status":"scheduled","score":null},
+    {"id":"I6","group":"I","matchday":3,"home":"Iraq","away":"Scotland","kickoff_utc":"2026-06-29T22:00:00Z","venue":"Allegiant Stadium","city":"Las Vegas, NV","status":"scheduled","score":null},
+    {"id":"J5","group":"J","matchday":3,"home":"Saudi Arabia","away":"Portugal","kickoff_utc":"2026-06-29T19:00:00Z","venue":"AT&T Stadium","city":"Arlington, TX","status":"scheduled","score":null},
+    {"id":"J6","group":"J","matchday":3,"home":"Indonesia","away":"Serbia","kickoff_utc":"2026-06-29T19:00:00Z","venue":"Arrowhead Stadium","city":"Kansas City, MO","status":"scheduled","score":null},
+    {"id":"K5","group":"K","matchday":3,"home":"Ivory Coast","away":"Netherlands","kickoff_utc":"2026-06-30T22:00:00Z","venue":"Hard Rock Stadium","city":"Miami Gardens, FL","status":"scheduled","score":null},
+    {"id":"K6","group":"K","matchday":3,"home":"Paraguay","away":"Austria","kickoff_utc":"2026-06-30T22:00:00Z","venue":"Gillette Stadium","city":"Foxborough, MA","status":"scheduled","score":null},
+    {"id":"L5","group":"L","matchday":3,"home":"Poland","away":"Belgium","kickoff_utc":"2026-06-30T19:00:00Z","venue":"BMO Field","city":"Toronto","status":"scheduled","score":null},
+    {"id":"L6","group":"L","matchday":3,"home":"Ecuador","away":"Mali","kickoff_utc":"2026-06-30T19:00:00Z","venue":"BC Place","city":"Vancouver","status":"scheduled","score":null}
+  ],
+  "knockout": {
+    "r32": {
+      "label": "Round of 32",
+      "dates": "4–7 July 2026",
+      "matches": []
+    },
+    "r16": {
+      "label": "Round of 16",
+      "dates": "10–13 July 2026",
+      "matches": []
+    },
+    "qf": {
+      "label": "Quarter-finals",
+      "dates": "16–17 July 2026",
+      "matches": []
+    },
+    "sf": {
+      "label": "Semi-finals",
+      "dates": "18–19 July 2026",
+      "matches": []
+    },
+    "third": {
+      "label": "Third Place",
+      "date": "19 July 2026",
+      "venue": "Hard Rock Stadium, Miami Gardens FL"
+    },
+    "final": {
+      "label": "Final",
+      "date": "19 July 2026",
+      "venue": "MetLife Stadium, East Rutherford NJ"
+    }
+  }
+}

@@ -1,40 +1,48 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import BottomNav from "@/components/BottomNav";
+import BetSlip, { BetSlipFAB } from "@/components/BetSlip";
+import { BetSlipProvider } from "@/contexts/BetSlipContext";
+import { WalletProvider } from "@/contexts/WalletContext";
+import MainWrapper from "@/components/MainWrapper";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Pitch IQ — Football Analysis",
-  description:
-    "Model-derived football match probabilities. Analysis only — you decide.",
+  title: "Pitch IQ — Match Analysis & Predictions",
+  description: "AI-powered football & tennis match analysis. Predictions, odds, and bet tracking.",
+  keywords: ["football analysis", "match predictions", "tennis predictions", "FIFA World Cup 2026"],
+  openGraph: {
+    title: "Pitch IQ — Match Analysis & Predictions",
+    description: "AI-powered football & tennis analysis. Predictions that help you win.",
+    type: "website",
+    siteName: "Pitch IQ",
+  },
+  robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-slate-900 text-slate-100">
-        <header className="border-b border-slate-700 bg-slate-900/80 backdrop-blur sticky top-0 z-10">
-          <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-            <a href="/" className="flex items-center gap-2 font-bold text-lg">
-              <span className="text-green-400">⚽</span>
-              <span>Pitch IQ</span>
-            </a>
-            <span className="text-xs text-slate-400 hidden sm:block">
-              Analysis only · you decide
-            </span>
-          </div>
-        </header>
-        <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
-        <footer className="border-t border-slate-800 mt-16 py-6 text-center text-xs text-slate-500 px-4">
-          <p>
-            Pitch IQ is a football analysis tool. It presents model-derived
-            probabilities and statistics — it is not a betting operator, does not
-            accept bets, and never tells you what to do with this information.
-            Football is inherently uncertain. Use this as one input among many.
-          </p>
-        </footer>
+    <html lang="en" className={`${GeistSans.variable} ${inter.variable}`}>
+      <body className="min-h-screen">
+        <WalletProvider>
+          <BetSlipProvider>
+            <div className="flex min-h-screen">
+              <Sidebar />
+              <MainWrapper>{children}</MainWrapper>
+            </div>
+            <BottomNav />
+            <BetSlipFAB />
+            <BetSlip />
+          </BetSlipProvider>
+        </WalletProvider>
       </body>
     </html>
   );

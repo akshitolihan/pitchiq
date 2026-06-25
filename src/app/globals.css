@@ -3,12 +3,75 @@
 @tailwind utilities;
 
 :root {
-  --background: #0f172a;
-  --foreground: #f8fafc;
+  --bg:        #0B0E13;
+  --surface:   #13161D;
+  --elevated:  #1A1F2B;
+  --green:     #16C784;
+  --cyan:      #22D3EE;
+  --white:     #F0F2F5;
+  --secondary: #8B91A0;
+  --border:    rgba(255,255,255,0.07);
+  --danger:    #EF4444;
+  --warning:   #F59E0B;
+
+  /* Font families */
+  --font-heading: var(--font-geist), 'Geist', system-ui, sans-serif;
+  --font-body:    var(--font-inter), 'Inter', system-ui, sans-serif;
 }
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+h1, h2, h3, h4, h5, h6,
+.font-heading, nav, .sidebar {
+  font-family: var(--font-heading);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--elevated); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
+
+/* Confidence badges */
+.badge-strong   { background: rgba(22,199,132,0.12); color: #16C784; border: 1px solid rgba(22,199,132,0.25); }
+.badge-moderate { background: rgba(245,158,11,0.12);  color: #F59E0B; border: 1px solid rgba(245,158,11,0.25); }
+.badge-balanced { background: rgba(139,145,160,0.12); color: #8B91A0; border: 1px solid rgba(139,145,160,0.2); }
+.badge-highrisk { background: rgba(239,68,68,0.12);   color: #EF4444; border: 1px solid rgba(239,68,68,0.25); }
+
+/* Card hover */
+.card-hover {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+/* Form dots */
+.form-w { background: #16C784; }
+.form-d { background: #8B91A0; }
+.form-l { background: #EF4444; }
+
+/* Live pulse */
+@keyframes livepulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.live-dot { animation: livepulse 1.4s ease-in-out infinite; }
+
+/* Horizontal scroll container */
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-x::-webkit-scrollbar { display: none; }
