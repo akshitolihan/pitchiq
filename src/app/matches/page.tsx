@@ -111,7 +111,7 @@ export default function MatchesPage() {
   useEffect(() => {
     fetch("/api/odds/football")
       .then(r => r.json())
-      .then((data: Match[]) => { setMatches(data ?? []); setLoading(false); })
+      .then((data: { matches?: Match[] }) => { setMatches(data.matches ?? []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 

@@ -105,6 +105,16 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const tour = (searchParams.get("tour") ?? "atp") as "atp" | "wta";
 
+  if (!API_KEY) {
+    return Response.json({
+      tour,
+      activeSports: [],
+      matches: [],
+      error: "ODDS_API_KEY not configured",
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
   try {
     // Dynamically discover all active tennis sports for this tour
     const sportKeys = await fetchActiveTennisSports(tour);

@@ -1,8 +1,7 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getFootballPrediction, getTennisPrediction } from "@/lib/odds-utils";
+
+export const dynamic = "force-dynamic";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -49,6 +48,77 @@ function fmtDate(s: string) {
 }
 function fmtTime(s: string) {
   return new Date(s).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) + " UTC";
+}
+
+interface LocalFixture {
+  id: number;
+  home_team: string;
+  away_team: string;
+  kickoff_utc: string;
+  prediction?: {
+    p_home_win?: number;
+    p_draw?: number;
+    p_away_win?: number;
+    p_over_2_5?: number;
+    p_under_2_5?: number;
+  } | null;
+}
+
+function probabilityToOdds(probability?: number | null) {
+  if (!probability || probability <= 0) return null;
+  return Number((1 / probability).toFixed(2));
+}
+
+async function fetchMarket<T>(url: string, fallback: T): Promise<T> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3000";
+    const response = await fetch(new URL(url, baseUrl), { cache: "no-store", signal: controller.signal });
+    if (!response.ok) return fallback;
+    return await response.json();
+  } catch {
+    return fallback;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchLocalFootball(): Promise<FootballMatch[]> {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  let data: { items?: LocalFixture[] } = { items: [] };
+
+  try {
+    const response = await fetch(`${apiBase}/api/fixtures`, {
+      cache: "no-store",
+      headers: { "X-User-Tier": "paid" },
+      signal: controller.signal,
+    });
+    if (response.ok) data = await response.json();
+  } catch {
+    data = { items: [] };
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  return (data.items ?? []).map((fixture) => ({
+    id: String(fixture.id),
+    competition: "Premier League",
+    commenceTime: fixture.kickoff_utc,
+    homeTeam: fixture.home_team,
+    awayTeam: fixture.away_team,
+    bookmaker: "Pitch IQ model",
+    odds: {
+      home: probabilityToOdds(fixture.prediction?.p_home_win),
+      draw: probabilityToOdds(fixture.prediction?.p_draw),
+      away: probabilityToOdds(fixture.prediction?.p_away_win),
+      over: probabilityToOdds(fixture.prediction?.p_over_2_5),
+      under: probabilityToOdds(fixture.prediction?.p_under_2_5),
+      totalLine: 2.5,
+    },
+  }));
 }
 
 // ─── Football Prediction Card (horizontal scroll) ─────────────────────────────
@@ -201,24 +271,15 @@ function TournamentRow({ name, icon, count, strongCount, href }: {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
-export default function HomePage() {
-  const [football, setFootball] = useState<FootballMatch[]>([]);
-  const [tennisAtp, setTennisAtp] = useState<TennisMatch[]>([]);
-  const [tennisWta, setTennisWta] = useState<TennisMatch[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function HomePage() {
+  const [football, atpData, wtaData] = await Promise.all([
+    fetchLocalFootball(),
+    fetchMarket<{ matches?: TennisMatch[] }>("/api/odds/tennis?tour=atp", { matches: [] }),
+    fetchMarket<{ matches?: TennisMatch[] }>("/api/odds/tennis?tour=wta", { matches: [] }),
+  ]);
 
-  useEffect(() => {
-    Promise.allSettled([
-      fetch("/api/odds/football").then(r => r.json()),
-      fetch("/api/odds/tennis?tour=atp").then(r => r.json()),
-      fetch("/api/odds/tennis?tour=wta").then(r => r.json()),
-    ]).then(([fb, atp, wta]) => {
-      if (fb.status === "fulfilled")  setFootball(fb.value.matches ?? []);
-      if (atp.status === "fulfilled") setTennisAtp(atp.value.matches ?? []);
-      if (wta.status === "fulfilled") setTennisWta(wta.value.matches ?? []);
-      setLoading(false);
-    });
-  }, []);
+  const tennisAtp = atpData.matches ?? [];
+  const tennisWta = wtaData.matches ?? [];
 
   const allTennis = [...tennisAtp, ...tennisWta];
   const totalMatches = football.length + allTennis.length;
@@ -266,7 +327,7 @@ export default function HomePage() {
             Find Your Edge
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--secondary)", fontFamily: "var(--font-body)" }}>
-            {loading ? "Loading predictions…" : `${totalMatches} matches analysed · Model updated live`}
+            {`${totalMatches} matches analysed · Model updated live`}
           </p>
         </div>
         <Link href="/betting"
@@ -292,7 +353,7 @@ export default function HomePage() {
               <p className="text-xs font-bold" style={{ fontFamily: "var(--font-heading)" }}>{s.label}</p>
               {s.count !== null && (
                 <p className="text-xs tabular-nums" style={{ color: "var(--secondary)", fontFamily: "var(--font-body)" }}>
-                  {loading ? "…" : `${s.count} matches`}
+                  {`${s.count} matches`}
                 </p>
               )}
             </div>
@@ -311,13 +372,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {loading ? (
-          <div className="flex gap-3 scroll-x pb-2">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="shrink-0 w-56 h-44 rounded-2xl animate-pulse" style={{ background: "var(--surface)" }} />
-            ))}
-          </div>
-        ) : topFootball.length === 0 ? (
+        {topFootball.length === 0 ? (
           <div className="rounded-2xl border p-10 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
             <p className="text-3xl mb-2">⚽</p>
             <p className="font-semibold text-sm">No football markets open right now</p>
@@ -341,13 +396,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {loading ? (
-          <div className="flex gap-3 scroll-x pb-2">
-            {[1,2,3].map(i => (
-              <div key={i} className="shrink-0 w-56 h-44 rounded-2xl animate-pulse" style={{ background: "var(--surface)" }} />
-            ))}
-          </div>
-        ) : topTennis.length === 0 ? (
+        {topTennis.length === 0 ? (
           <div className="rounded-2xl border p-10 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
             <p className="text-3xl mb-2">🎾</p>
             <p className="font-semibold text-sm">No tennis markets open right now</p>
@@ -390,7 +439,7 @@ export default function HomePage() {
               />
             );
           })}
-          {!loading && football.length === 0 && allTennis.length === 0 && (
+          {football.length === 0 && allTennis.length === 0 && (
             <div className="rounded-2xl border p-10 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <p className="text-3xl mb-2">📅</p>
               <p className="font-semibold text-sm">No active competitions right now</p>

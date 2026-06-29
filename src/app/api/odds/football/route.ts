@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 const API_KEY = process.env.ODDS_API_KEY ?? "";
 const BASE = "https://api.the-odds-api.com/v4";
 const PREFERRED_BOOKS = ["pinnacle", "betfair_ex_eu", "williamhill", "bet365", "unibet"];
+const LOCAL_API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
 const SPORTS = [
   { key: "soccer_fifa_world_cup",         label: "FIFA World Cup 2026" },
@@ -42,9 +43,72 @@ interface OddsEvent {
   bookmakers: OddsBookmaker[];
 }
 
+interface LocalFixture {
+  id: number;
+  home_team: string;
+  away_team: string;
+  kickoff_utc: string;
+  prediction?: {
+    p_home_win?: number;
+    p_draw?: number;
+    p_away_win?: number;
+    p_over_2_5?: number;
+    p_under_2_5?: number;
+  } | null;
+}
+
+interface LocalFixturesResponse {
+  items?: LocalFixture[];
+}
+
+function probabilityToOdds(probability?: number | null) {
+  if (!probability || probability <= 0) return null;
+  return Number((1 / probability).toFixed(2));
+}
+
+async function localFixtureFallback() {
+  let data: LocalFixturesResponse = { items: [] };
+
+  try {
+    const res = await fetch(`${LOCAL_API_BASE}/api/fixtures`, {
+      cache: "no-store",
+      headers: { "X-User-Tier": "paid" },
+    });
+    if (res.ok) {
+      data = await res.json();
+    }
+  } catch {
+    data = { items: [] };
+  }
+
+  const matches = (data.items ?? []).map((fixture) => ({
+    id: String(fixture.id),
+    competition: "Premier League",
+    commenceTime: fixture.kickoff_utc,
+    homeTeam: fixture.home_team,
+    awayTeam: fixture.away_team,
+    bookmaker: "Pitch IQ model",
+    odds: {
+      home: probabilityToOdds(fixture.prediction?.p_home_win),
+      draw: probabilityToOdds(fixture.prediction?.p_draw),
+      away: probabilityToOdds(fixture.prediction?.p_away_win),
+      over: probabilityToOdds(fixture.prediction?.p_over_2_5),
+      under: probabilityToOdds(fixture.prediction?.p_under_2_5),
+      totalLine: 2.5,
+    },
+  }));
+
+  return Response.json({
+    matches,
+    source: "local-fixtures",
+    error: matches.length === 0 ? "Local fixtures API unavailable or empty" : undefined,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
 export async function GET() {
   if (!API_KEY) {
-    return Response.json({ matches: [], error: "ODDS_API_KEY not configured" });
+    return localFixtureFallback();
   }
 
   try {
@@ -93,6 +157,10 @@ export async function GET() {
 
     return Response.json({ matches, updatedAt: new Date().toISOString() });
   } catch (err) {
-    return Response.json({ error: String(err) }, { status: 500 });
+    try {
+      return await localFixtureFallback();
+    } catch {
+      return Response.json({ matches: [], error: String(err) }, { status: 500 });
+    }
   }
 }
