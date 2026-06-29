@@ -31,7 +31,7 @@ export default function BetSlip() {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--border)" }}>
           <div className="flex items-center gap-2">
-            <span className="text-lg font-black">Bet Slip</span>
+            <span className="text-lg font-black">Match Plan</span>
             {selections.length > 0 && (
               <span className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
                 style={{ background: "var(--green)", color: "#000" }}>
@@ -58,9 +58,9 @@ export default function BetSlip() {
           {selections.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <span className="text-4xl mb-3">📋</span>
-              <p className="font-semibold">Your slip is empty</p>
+              <p className="font-semibold">Your match plan is empty</p>
               <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
-                Click any odds to add a selection
+                Add analysis picks to plan future matches
               </p>
             </div>
           ) : (
@@ -98,7 +98,7 @@ export default function BetSlip() {
           <div className="border-t p-4 space-y-3" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
             {/* Stake per bet */}
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Stake per bet</span>
+              <span className="text-sm font-medium">Simulation stake</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm" style={{ color: "var(--secondary)" }}>£</span>
                 <input
@@ -131,30 +131,30 @@ export default function BetSlip() {
             <div className="rounded-xl p-3 space-y-1.5" style={{ background: "var(--elevated)" }}>
               {selections.length > 1 && (
                 <div className="flex justify-between text-xs" style={{ color: "var(--secondary)" }}>
-                  <span>Combined odds</span>
+                  <span>Combined model odds</span>
                   <span className="font-bold tabular-nums">{totalOdds.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between text-xs" style={{ color: "var(--secondary)" }}>
-                <span>Total stake</span>
+                <span>Simulation stake</span>
                 <span className="font-bold tabular-nums">£{totalStake.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold border-t pt-1.5" style={{ borderColor: "var(--border)" }}>
-                <span>Potential return</span>
+                <span>Simulated outcome</span>
                 <span style={{ color: "var(--green)" }} className="text-base tabular-nums">
                   £{potentialReturn.toFixed(2)}
                 </span>
               </div>
             </div>
 
-            {/* Place bet button */}
+            {/* Save plan button */}
             <button className="w-full py-3.5 rounded-xl font-bold text-sm transition-all hover:brightness-110 active:scale-95"
               style={{ background: "var(--green)", color: "#000" }}>
-              Place {selections.length} Bet{selections.length !== 1 ? "s" : ""} · £{totalStake.toFixed(2)}
+              Save Plan · {selections.length} item{selections.length !== 1 ? "s" : ""}
             </button>
 
             <p className="text-center text-xs" style={{ color: "var(--secondary)" }}>
-              For entertainment purposes only
+              For analysis and education only
             </p>
           </div>
         )}
@@ -163,7 +163,7 @@ export default function BetSlip() {
   );
 }
 
-// Floating betslip toggle button (hidden on /betting page which has inline slip)
+// Floating match-plan toggle button (hidden on /betting page which has inline plan)
 export function BetSlipFAB() {
   const { state, setOpen } = useBetSlip();
   const { selections, open } = state;
@@ -178,7 +178,7 @@ export function BetSlipFAB() {
       style={{ background: "var(--green)", color: "#000" }}
     >
       <span>📋</span>
-      <span>Bet Slip</span>
+      <span>Match Plan</span>
       {selections.length > 0 && (
         <span className="w-5 h-5 rounded-full text-xs font-black flex items-center justify-center"
           style={{ background: "#000", color: "var(--green)" }}>

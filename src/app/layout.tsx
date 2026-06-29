@@ -17,11 +17,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Pitch IQ — Match Analysis & Predictions",
-  description: "AI-powered football & tennis match analysis. Predictions, odds, and bet tracking.",
+  description: "AI-powered football and tennis match analysis, planning, probabilities, and simulation.",
   keywords: ["football analysis", "match predictions", "tennis predictions", "FIFA World Cup 2026"],
   openGraph: {
     title: "Pitch IQ — Match Analysis & Predictions",
-    description: "AI-powered football & tennis analysis. Predictions that help you win.",
+    description: "AI-powered football and tennis analysis with match planning and probability insights.",
     type: "website",
     siteName: "Pitch IQ",
   },

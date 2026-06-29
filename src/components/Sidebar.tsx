@@ -6,10 +6,10 @@ import { useWallet } from "@/contexts/WalletContext";
 const navItems = [
   { href: "/",        label: "Home",     icon: HomeIcon },
   { href: "/live",    label: "Live",     icon: LiveIcon,    dot: true },
-  { href: "/betting", label: "Odds",     icon: OddsIcon },
+  { href: "/betting", label: "Plan",     icon: OddsIcon },
   { href: "/matches", label: "Matches",  icon: MatchesIcon },
   { href: "/fifa",    label: "FIFA WC",  icon: TrophyIcon },
-  { href: "/wallet",  label: "Wallet",   icon: WalletIcon },
+  { href: "/wallet",  label: "Sim",      icon: WalletIcon },
 ];
 
 export default function Sidebar() {
@@ -56,7 +56,7 @@ export default function Sidebar() {
               {dot && (
                 <span className="ml-auto w-2 h-2 rounded-full live-dot" style={{ background: "var(--danger)" }} />
               )}
-              {label === "Wallet" && pendingBets > 0 && (
+              {label === "Sim" && pendingBets > 0 && (
                 <span className="ml-auto text-xs font-black w-5 h-5 rounded-full flex items-center justify-center"
                   style={{ background: "var(--warning)", color: "#0B0E13" }}>
                   {pendingBets}
@@ -78,7 +78,7 @@ export default function Sidebar() {
           style={{ background: "var(--elevated)", borderColor: "var(--border)" }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--secondary)", fontFamily: "var(--font-heading)" }}>
-              Virtual Wallet
+              Demo Simulation
             </span>
             <span className="text-xs" style={{ color: "var(--secondary)" }}>→</span>
           </div>
@@ -86,7 +86,7 @@ export default function Sidebar() {
             PQ$ {state.balance.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="text-xs mt-1" style={{ color: "var(--secondary)", fontFamily: "var(--font-body)" }}>
-            {pendingBets > 0 ? `${pendingBets} pending bet${pendingBets > 1 ? "s" : ""}` : "No pending bets"}
+            {pendingBets > 0 ? `${pendingBets} saved simulation${pendingBets > 1 ? "s" : ""}` : "No saved simulations"}
           </p>
         </Link>
       </div>

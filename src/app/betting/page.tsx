@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useBetSlip, BetSelection } from "@/contexts/BetSlipContext";
+import { useBetSlip, BetSelection, PlanStatus } from "@/contexts/BetSlipContext";
 import { useWallet } from "@/contexts/WalletContext";
 import { computeFootballMarkets, computeTennisMarkets, getFootballPrediction, getTennisPrediction } from "@/lib/odds-utils";
 
@@ -266,11 +266,26 @@ function TennisCard({ m }: { m: TennisMatch }) {
   );
 }
 
-// ─── Bet Slip Panel (sidebar / bottom sheet) ──────────────────────────────────
+// ─── Match Plan Panel (sidebar / bottom sheet) ────────────────────────────────
+
+const PLAN_STATUS_OPTIONS: Array<{ value: PlanStatus; label: string }> = [
+  { value: "watching", label: "Watching" },
+  { value: "strong-interest", label: "Strong interest" },
+  { value: "avoid", label: "Avoid" },
+  { value: "review-later", label: "Review later" },
+];
 
 function BetSlipPanel({ onClose }: { onClose: () => void }) {
-  const { state, removeSelection, clearSlip, setStake } = useBetSlip();
-  const { placeBet, state: wallet } = useWallet();
+  const {
+    state,
+    removeSelection,
+    clearSlip,
+    setStake,
+    getSelectionMeta,
+    setSelectionStatus,
+    setSelectionNote,
+  } = useBetSlip();
+  const { state: wallet } = useWallet();
   const { selections, stake } = state;
   const [mode, setMode] = useState<"single" | "acca">("single");
   const [msg, setMsg] = useState<string | null>(null);
@@ -282,13 +297,7 @@ function BetSlipPanel({ onClose }: { onClose: () => void }) {
     : selections.reduce((a, s) => a + stake * s.odds, 0);
 
   function handlePlace() {
-    const ok = placeBet(selections, stake, mode);
-    if (ok) {
-      clearSlip();
-      setMsg("✓ Bet placed!");
-    } else {
-      setMsg("Insufficient balance");
-    }
+    setMsg("Analysis plan saved locally");
     setTimeout(() => setMsg(null), 2500);
   }
 
@@ -298,7 +307,7 @@ function BetSlipPanel({ onClose }: { onClose: () => void }) {
       <div className="flex items-center justify-between px-4 py-3 border-b shrink-0"
         style={{ borderColor: "var(--border)", background: "var(--elevated)" }}>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-black">Bet Slip</span>
+          <span className="text-sm font-black">Match Plan</span>
           {selections.length > 0 && (
             <span className="w-5 h-5 rounded-full text-xs font-black flex items-center justify-center"
               style={{ background: "var(--green)", color: "#000" }}>
@@ -327,15 +336,17 @@ function BetSlipPanel({ onClose }: { onClose: () => void }) {
         {selections.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-6 py-12">
             <div className="text-5xl mb-4 opacity-20">📋</div>
-            <p className="font-bold text-sm">Bet Slip is Empty</p>
+            <p className="font-bold text-sm">Match Plan is Empty</p>
             <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>
-              Click any odds to add a selection
+              Add analysis picks to plan future matches
             </p>
           </div>
         ) : (
           <div>
-            {selections.map(sel => (
-              <div key={sel.id} className="px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+            {selections.map(sel => {
+              const meta = getSelectionMeta(sel.id);
+              return (
+              <div key={sel.id} className="px-4 py-3 border-b space-y-3" style={{ borderColor: "var(--border)" }}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs truncate" style={{ color: "var(--secondary)" }}>{sel.matchTitle}</p>
@@ -351,6 +362,29 @@ function BetSlipPanel({ onClose }: { onClose: () => void }) {
                     </span>
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {PLAN_STATUS_OPTIONS.map(option => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSelectionStatus(sel.id, option.value)}
+                      className="text-xs rounded-lg px-2 py-1.5 font-semibold"
+                      style={{
+                        background: meta.status === option.value ? "rgba(22,199,132,0.16)" : "var(--bg)",
+                        color: meta.status === option.value ? "var(--green)" : "var(--secondary)",
+                        border: `1px solid ${meta.status === option.value ? "var(--green)" : "var(--border)"}`,
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={meta.note}
+                  onChange={event => setSelectionNote(sel.id, event.target.value)}
+                  placeholder="Plan note: lineup dependency, risk, model disagreement..."
+                  className="w-full min-h-16 rounded-lg px-3 py-2 text-xs outline-none resize-none"
+                  style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+                />
                 {(mode === "single" || selections.length === 1) && (
                   <div className="flex items-center gap-2 mt-2">
                     <div className="flex-1 flex items-center gap-1 rounded-lg px-2.5 py-1.5"
@@ -367,12 +401,12 @@ function BetSlipPanel({ onClose }: { onClose: () => void }) {
                   </div>
                 )}
               </div>
-            ))}
+            )})}
 
             {mode === "acca" && selections.length > 1 && (
               <div className="px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
                 <div className="flex items-center justify-between text-xs mb-2">
-                  <span style={{ color: "var(--secondary)" }}>Combined odds</span>
+                  <span style={{ color: "var(--secondary)" }}>Combined model odds</span>
                   <span className="font-black tabular-nums" style={{ color: "var(--cyan, #06b6d4)" }}>
                     {totalOdds.toFixed(2)}
                   </span>
@@ -405,11 +439,11 @@ function BetSlipPanel({ onClose }: { onClose: () => void }) {
           </div>
         )}
         <div className="flex justify-between text-sm">
-          <span style={{ color: "var(--secondary)" }}>Total Stake</span>
+          <span style={{ color: "var(--secondary)" }}>Simulation Stake</span>
           <span className="font-bold tabular-nums">PQ$ {totalStake.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm border-t pt-2" style={{ borderColor: "var(--border)" }}>
-          <span style={{ color: "var(--secondary)" }}>Payout</span>
+          <span style={{ color: "var(--secondary)" }}>Simulated Outcome</span>
           <span className="font-black tabular-nums" style={{ color: "var(--green)" }}>
             PQ$ {payout.toFixed(2)}
           </span>
@@ -438,11 +472,11 @@ function BetSlipPanel({ onClose }: { onClose: () => void }) {
               color: selections.length > 0 ? "#000" : "var(--secondary)",
               cursor: selections.length === 0 ? "not-allowed" : "pointer",
             }}>
-            {selections.length > 0 ? `Place Bet (${selections.length})` : "Place Bet"}
+            {selections.length > 0 ? `Save Plan (${selections.length})` : "Save Plan"}
           </button>
         </div>
         <p className="text-center text-xs" style={{ color: "var(--secondary)" }}>
-          Balance: PQ$ {wallet.balance.toFixed(2)}
+          Demo balance: PQ$ {wallet.balance.toFixed(2)}
         </p>
       </div>
     </div>
@@ -518,7 +552,7 @@ export default function BettingPage() {
             ))}
           </div>
 
-          {/* Right: refresh indicator + bet slip toggle */}
+          {/* Right: refresh indicator + match plan toggle */}
           <div className="flex items-center gap-2">
             {lastUpdate && (
               <span className="text-xs flex items-center gap-1" style={{ color: "var(--secondary)" }}>
@@ -533,7 +567,7 @@ export default function BettingPage() {
                 background: slipOpen ? "var(--elevated)" : selCount > 0 ? "var(--green)" : "var(--elevated)",
                 color: slipOpen ? "var(--secondary)" : selCount > 0 ? "#000" : "var(--secondary)",
               }}>
-              📋 Slip
+              📋 Plan
               {selCount > 0 && (
                 <span className="w-5 h-5 rounded-full text-xs font-black flex items-center justify-center"
                   style={{ background: slipOpen ? "var(--green)" : "#000", color: slipOpen ? "#000" : "var(--green)" }}>
@@ -568,7 +602,7 @@ export default function BettingPage() {
         {sport === "football" && isDemoMode && (
           <div className="px-4 py-2 border-b text-xs font-semibold"
             style={{ borderColor: "var(--border)", background: "rgba(245,166,35,0.08)", color: "var(--warning)" }}>
-            MVP demo mode: seeded fixtures, model odds, virtual wallet, and bet slip are enabled for testing.
+            MVP demo mode: seeded fixtures, model odds, virtual wallet, and match planning are enabled for testing.
           </div>
         )}
 
@@ -604,7 +638,7 @@ export default function BettingPage() {
         </div>
       </div>
 
-      {/* ── Bet Slip Sidebar (desktop) ── */}
+      {/* ── Match Plan Sidebar (desktop) ── */}
       {slipOpen && (
         <>
           <div className="hidden md:flex flex-col w-80 shrink-0 border-l"

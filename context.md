@@ -66,3 +66,12 @@ For future work, every meaningful app update should be recorded in this file and
 - Selecting a mutually exclusive pick for the same match now replaces the conflicting existing pick instead of allowing both in the slip.
 - Covered MVP football/tennis markets including 1X2, Match Winner, Draw No Bet, BTTS, Over/Under, Correct Score, Total Sets, and result-set conflicts between 1X2/Double Chance/DNB.
 - Existing saved betslip selections are cleaned when loaded from local storage.
+
+## 2026-06-30 - Start Match Plan Repositioning
+
+- Repositioned the core betslip workflow into a Match Plan workflow for analysis and planning.
+- Added persisted per-selection planning metadata in `src/contexts/BetSlipContext.tsx`: status and notes.
+- Added Match Plan statuses: Watching, Strong interest, Avoid, and Review later.
+- Added note fields to Match Plan items on the main Plan page so users can document lineup dependencies, risk, and model disagreement.
+- Changed the main Plan panel save action to persist locally instead of placing/clearing a virtual bet.
+- Updated global drawer, mobile nav, sidebar labels, and metadata language toward analysis/planning/simulation terminology.
