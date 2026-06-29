@@ -26,13 +26,77 @@ type Action =
   | { type: "SET_OPEN"; open: boolean }
   | { type: "LOAD"; selections: BetSelection[]; stake: number };
 
+function normalizedMarket(market: string) {
+  return market.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function resultSet(selection: BetSelection): Set<string> | null {
+  const market = normalizedMarket(selection.market);
+  const outcome = selection.outcome.toLowerCase();
+
+  if (market === "1x2" || market === "match winner") {
+    if (outcome === "draw") return new Set(["draw"]);
+    if (outcome.includes("draw")) return new Set(["draw"]);
+    if (outcome === selection.matchTitle.split(" vs ")[0].toLowerCase()) return new Set(["home"]);
+    if (outcome === selection.matchTitle.split(" vs ")[1]?.toLowerCase()) return new Set(["away"]);
+    return selection.id.endsWith("||home") || selection.id.endsWith("||p1")
+      ? new Set(["home"])
+      : selection.id.endsWith("||away") || selection.id.endsWith("||p2")
+        ? new Set(["away"])
+        : null;
+  }
+
+  if (market === "double chance") {
+    if (outcome.includes("1x")) return new Set(["home", "draw"]);
+    if (outcome.includes("x2")) return new Set(["draw", "away"]);
+    if (outcome.includes("12")) return new Set(["home", "away"]);
+  }
+
+  if (market === "draw no bet") {
+    if (selection.id.endsWith("||home")) return new Set(["home"]);
+    if (selection.id.endsWith("||away")) return new Set(["away"]);
+  }
+
+  return null;
+}
+
+function exclusiveGroup(selection: BetSelection): string | null {
+  const market = normalizedMarket(selection.market);
+  if (["1x2", "match winner", "draw no bet", "btts", "correct score", "total sets"].includes(market)) {
+    return market;
+  }
+  if (market.startsWith("over/under")) return market;
+  return null;
+}
+
+function areMutuallyExclusive(a: BetSelection, b: BetSelection) {
+  if (a.matchId !== b.matchId || a.sport !== b.sport) return false;
+
+  const aGroup = exclusiveGroup(a);
+  const bGroup = exclusiveGroup(b);
+  if (aGroup && aGroup === bGroup) return true;
+
+  const aResults = resultSet(a);
+  const bResults = resultSet(b);
+  if (!aResults || !bResults) return false;
+
+  return Array.from(aResults).every(result => !bResults.has(result));
+}
+
+function withoutMutuallyExclusiveSelections(selections: BetSelection[]) {
+  return selections.reduce<BetSelection[]>((validSelections, selection) => [
+    ...validSelections.filter(existing => !areMutuallyExclusive(existing, selection)),
+    selection,
+  ], []);
+}
+
 function reducer(state: BetSlipState, action: Action): BetSlipState {
   switch (action.type) {
     case "TOGGLE_SELECTION": {
       const exists = state.selections.find(s => s.id === action.payload.id);
       const selections = exists
         ? state.selections.filter(s => s.id !== action.payload.id)
-        : [...state.selections, action.payload];
+        : withoutMutuallyExclusiveSelections([...state.selections, action.payload]);
       return { ...state, selections };
     }
     case "REMOVE":
@@ -44,7 +108,7 @@ function reducer(state: BetSlipState, action: Action): BetSlipState {
     case "SET_OPEN":
       return { ...state, open: action.open };
     case "LOAD":
-      return { ...state, selections: action.selections, stake: action.stake };
+      return { ...state, selections: withoutMutuallyExclusiveSelections(action.selections), stake: action.stake };
     default:
       return state;
   }

@@ -59,3 +59,10 @@ For future work, every meaningful app update should be recorded in this file and
 - MVP target now: seeded football fixtures, model-derived odds, prediction cards, match detail markets, virtual wallet, and bet slip should work end-to-end.
 - Switched the dashboard back to client-side loading from `/api/odds/football` to avoid a Next server-render runtime issue during local MVP testing.
 - Verified `next build`, TypeScript, `/api/odds/football`, `/`, and `/betting/football/381` all respond successfully.
+
+## 2026-06-30 - Prevent Mutually Exclusive Betslip Picks
+
+- Added betslip compatibility checks in `src/contexts/BetSlipContext.tsx`.
+- Selecting a mutually exclusive pick for the same match now replaces the conflicting existing pick instead of allowing both in the slip.
+- Covered MVP football/tennis markets including 1X2, Match Winner, Draw No Bet, BTTS, Over/Under, Correct Score, Total Sets, and result-set conflicts between 1X2/Double Chance/DNB.
+- Existing saved betslip selections are cleaned when loaded from local storage.
