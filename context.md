@@ -41,3 +41,21 @@ For future work, every meaningful app update should be recorded in this file and
 - Added an immediate empty response in `src/app/api/odds/tennis/route.ts` when `ODDS_API_KEY` is missing so the home page does not stay stuck loading.
 - Updated `src/app/page.tsx` to server-render the home dashboard and read seeded football fixtures directly from the FastAPI backend, so matches appear in the initial page render without waiting on browser-side market fetches.
 - Restarted the FastAPI backend after finding port `8000` was held by a stale process; verified the home page renders Arsenal/Liverpool fixtures and `10 matches analysed`.
+
+## 2026-06-29 - Remove Demo Fixtures From Live App
+
+- User flagged that the matches shown in the app were dummy/demo data.
+- Removed the seeded FastAPI fixture fallback from `src/app/api/odds/football/route.ts`.
+- Updated `src/app/page.tsx` so the dashboard reads only the live odds route, not seeded local fixtures.
+- Added `ODDS_API_KEY` to `.env.example`; without this key, the app now shows an empty real-data state instead of sample fixtures.
+- Kept the seeded backend data available only for local model/backend testing.
+
+## 2026-06-29 - Pivot To MVP Demo Mode
+
+- User decided to continue with dummy data for now and build a working MVP around it.
+- Restored the seeded fixture fallback in `src/app/api/odds/football/route.ts`, but made it explicit with `source: demo-fixtures`, `demo: true`, competition label `Premier League Demo`, and bookmaker label `Demo model data`.
+- Kept `ODDS_API_KEY` support for future live market data; when configured, the app still uses live odds first.
+- Added demo-mode banners/labels to the dashboard, Matches page, Betting page, and football match detail page.
+- MVP target now: seeded football fixtures, model-derived odds, prediction cards, match detail markets, virtual wallet, and bet slip should work end-to-end.
+- Switched the dashboard back to client-side loading from `/api/odds/football` to avoid a Next server-render runtime issue during local MVP testing.
+- Verified `next build`, TypeScript, `/api/odds/football`, `/`, and `/betting/football/381` all respond successfully.

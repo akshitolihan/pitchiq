@@ -66,7 +66,7 @@ function probabilityToOdds(probability?: number | null) {
   return Number((1 / probability).toFixed(2));
 }
 
-async function localFixtureFallback() {
+async function demoFixtureFallback() {
   let data: LocalFixturesResponse = { items: [] };
 
   try {
@@ -83,11 +83,11 @@ async function localFixtureFallback() {
 
   const matches = (data.items ?? []).map((fixture) => ({
     id: String(fixture.id),
-    competition: "Premier League",
+    competition: "Premier League Demo",
     commenceTime: fixture.kickoff_utc,
     homeTeam: fixture.home_team,
     awayTeam: fixture.away_team,
-    bookmaker: "Pitch IQ model",
+    bookmaker: "Demo model data",
     odds: {
       home: probabilityToOdds(fixture.prediction?.p_home_win),
       draw: probabilityToOdds(fixture.prediction?.p_draw),
@@ -100,15 +100,16 @@ async function localFixtureFallback() {
 
   return Response.json({
     matches,
-    source: "local-fixtures",
-    error: matches.length === 0 ? "Local fixtures API unavailable or empty" : undefined,
+    source: "demo-fixtures",
+    demo: true,
+    error: matches.length === 0 ? "Demo fixtures API unavailable or empty" : undefined,
     updatedAt: new Date().toISOString(),
   });
 }
 
 export async function GET() {
   if (!API_KEY) {
-    return localFixtureFallback();
+    return demoFixtureFallback();
   }
 
   try {
@@ -155,12 +156,8 @@ export async function GET() {
       };
     }).sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
 
-    return Response.json({ matches, updatedAt: new Date().toISOString() });
+    return Response.json({ matches, source: "live-odds", updatedAt: new Date().toISOString() });
   } catch (err) {
-    try {
-      return await localFixtureFallback();
-    } catch {
-      return Response.json({ matches: [], error: String(err) }, { status: 500 });
-    }
+    return demoFixtureFallback();
   }
 }

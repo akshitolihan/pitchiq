@@ -493,6 +493,7 @@ export default function BettingPage() {
   const tennisMatches = tennisTab === "atp" ? tennisAtp : tennisWta;
 
   const currentList = sport === "football" ? football : tennisMatches;
+  const isDemoMode = football.some((match) => match.bookmaker.toLowerCase().includes("demo"));
 
   return (
     <div className="flex h-full" style={{ minHeight: "100dvh" }}>
@@ -561,6 +562,13 @@ export default function BettingPage() {
             <span className="ml-auto text-xs self-center" style={{ color: "var(--secondary)" }}>
               {tennisMatches.length} matches
             </span>
+          </div>
+        )}
+
+        {sport === "football" && isDemoMode && (
+          <div className="px-4 py-2 border-b text-xs font-semibold"
+            style={{ borderColor: "var(--border)", background: "rgba(245,166,35,0.08)", color: "var(--warning)" }}>
+            MVP demo mode: seeded fixtures, model odds, virtual wallet, and bet slip are enabled for testing.
           </div>
         )}
 

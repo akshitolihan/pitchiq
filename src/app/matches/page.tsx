@@ -9,6 +9,7 @@ interface Match {
   awayTeam: string;
   competition: string;
   commenceTime: string;
+  bookmaker?: string;
   odds: { home: number; draw: number; away: number };
 }
 
@@ -39,6 +40,7 @@ function MatchRow({ match }: { match: Match }) {
   const timeStr = kickoff.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   const dateStr = kickoff.toLocaleDateString("en-GB", { weekday: "short", month: "short", day: "numeric" });
   const isToday = kickoff.toDateString() === new Date().toDateString();
+  const isDemo = match.bookmaker?.toLowerCase().includes("demo") ?? false;
 
   return (
     <Link href={`/betting/football/${match.id}`}
@@ -73,6 +75,11 @@ function MatchRow({ match }: { match: Match }) {
           <span className="text-xs" style={{ color: "var(--secondary)" }}>
             Pick: <span style={{ color: "var(--white)" }}>{pred.teamLabel}</span>
           </span>
+          {isDemo && (
+            <span className="text-xs font-bold" style={{ color: "var(--warning)" }}>
+              Demo
+            </span>
+          )}
           <span className="text-xs tabular-nums" style={{ color: "var(--secondary)" }}>
             {pred.confidence}%
           </span>
@@ -131,6 +138,7 @@ export default function MatchesPage() {
     const p = getFootballPrediction(m.homeTeam, m.awayTeam, m.odds.home, m.odds.draw, m.odds.away);
     return p.tier === "Strong";
   }).length;
+  const isDemoMode = matches.some((match) => match.bookmaker?.toLowerCase().includes("demo"));
 
   return (
     <div>
@@ -141,6 +149,13 @@ export default function MatchesPage() {
           Football fixtures with AI predictions
         </p>
       </div>
+
+      {isDemoMode && (
+        <div className="rounded-xl border px-4 py-3 text-sm mb-5"
+          style={{ background: "rgba(245,166,35,0.08)", borderColor: "rgba(245,166,35,0.35)", color: "var(--warning)" }}>
+          Demo fixtures are active for MVP testing. These are seeded model fixtures, not live market data.
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex gap-2 mb-5">

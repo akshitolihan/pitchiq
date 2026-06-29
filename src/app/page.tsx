@@ -1,7 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getFootballPrediction, getTennisPrediction } from "@/lib/odds-utils";
-
-export const dynamic = "force-dynamic";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,31 +51,11 @@ function fmtTime(s: string) {
   return new Date(s).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) + " UTC";
 }
 
-interface LocalFixture {
-  id: number;
-  home_team: string;
-  away_team: string;
-  kickoff_utc: string;
-  prediction?: {
-    p_home_win?: number;
-    p_draw?: number;
-    p_away_win?: number;
-    p_over_2_5?: number;
-    p_under_2_5?: number;
-  } | null;
-}
-
-function probabilityToOdds(probability?: number | null) {
-  if (!probability || probability <= 0) return null;
-  return Number((1 / probability).toFixed(2));
-}
-
 async function fetchMarket<T>(url: string, fallback: T): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:3000";
-    const response = await fetch(new URL(url, baseUrl), { cache: "no-store", signal: controller.signal });
+    const response = await fetch(url, { cache: "no-store", signal: controller.signal });
     if (!response.ok) return fallback;
     return await response.json();
   } catch {
@@ -84,49 +65,13 @@ async function fetchMarket<T>(url: string, fallback: T): Promise<T> {
   }
 }
 
-async function fetchLocalFootball(): Promise<FootballMatch[]> {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  let data: { items?: LocalFixture[] } = { items: [] };
-
-  try {
-    const response = await fetch(`${apiBase}/api/fixtures`, {
-      cache: "no-store",
-      headers: { "X-User-Tier": "paid" },
-      signal: controller.signal,
-    });
-    if (response.ok) data = await response.json();
-  } catch {
-    data = { items: [] };
-  } finally {
-    clearTimeout(timeout);
-  }
-
-  return (data.items ?? []).map((fixture) => ({
-    id: String(fixture.id),
-    competition: "Premier League",
-    commenceTime: fixture.kickoff_utc,
-    homeTeam: fixture.home_team,
-    awayTeam: fixture.away_team,
-    bookmaker: "Pitch IQ model",
-    odds: {
-      home: probabilityToOdds(fixture.prediction?.p_home_win),
-      draw: probabilityToOdds(fixture.prediction?.p_draw),
-      away: probabilityToOdds(fixture.prediction?.p_away_win),
-      over: probabilityToOdds(fixture.prediction?.p_over_2_5),
-      under: probabilityToOdds(fixture.prediction?.p_under_2_5),
-      totalLine: 2.5,
-    },
-  }));
-}
-
 // ─── Football Prediction Card (horizontal scroll) ─────────────────────────────
 
 function FootballPredCard({ m }: { m: FootballMatch }) {
   const pred = getFootballPrediction(m.homeTeam, m.awayTeam, m.odds.home, m.odds.draw, m.odds.away);
   const tierColor = pred.tier === "Strong" ? "var(--green)" : pred.tier === "Moderate" ? "var(--warning)" : "var(--secondary)";
   const pickLabel = pred.outcome === "Home Win" ? m.homeTeam : pred.outcome === "Away Win" ? m.awayTeam : "Draw";
+  const isDemo = m.bookmaker.toLowerCase().includes("demo");
 
   return (
     <Link href={`/betting/football/${m.id}`}
@@ -139,7 +84,9 @@ function FootballPredCard({ m }: { m: FootballMatch }) {
         <span className="text-xs font-semibold truncate" style={{ color: "var(--secondary)", fontFamily: "var(--font-body)" }}>
           ⚽ {m.competition ?? "Football"}
         </span>
-        <span className="text-xs shrink-0 ml-2" style={{ color: "var(--secondary)" }}>{fmtTime(m.commenceTime)}</span>
+        <span className="text-xs shrink-0 ml-2" style={{ color: isDemo ? "var(--warning)" : "var(--secondary)" }}>
+          {isDemo ? "Demo data" : fmtTime(m.commenceTime)}
+        </span>
       </div>
 
       {/* Teams */}
@@ -271,18 +218,35 @@ function TournamentRow({ name, icon, count, strongCount, href }: {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
-export default async function HomePage() {
-  const [football, atpData, wtaData] = await Promise.all([
-    fetchLocalFootball(),
-    fetchMarket<{ matches?: TennisMatch[] }>("/api/odds/tennis?tour=atp", { matches: [] }),
-    fetchMarket<{ matches?: TennisMatch[] }>("/api/odds/tennis?tour=wta", { matches: [] }),
-  ]);
+export default function HomePage() {
+  const [football, setFootball] = useState<FootballMatch[]>([]);
+  const [tennisAtp, setTennisAtp] = useState<TennisMatch[]>([]);
+  const [tennisWta, setTennisWta] = useState<TennisMatch[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const tennisAtp = atpData.matches ?? [];
-  const tennisWta = wtaData.matches ?? [];
+  useEffect(() => {
+    let mounted = true;
+
+    Promise.all([
+      fetchMarket<{ matches?: FootballMatch[] }>("/api/odds/football", { matches: [] }),
+      fetchMarket<{ matches?: TennisMatch[] }>("/api/odds/tennis?tour=atp", { matches: [] }),
+      fetchMarket<{ matches?: TennisMatch[] }>("/api/odds/tennis?tour=wta", { matches: [] }),
+    ]).then(([footballData, atpData, wtaData]) => {
+      if (!mounted) return;
+      setFootball(footballData.matches ?? []);
+      setTennisAtp(atpData.matches ?? []);
+      setTennisWta(wtaData.matches ?? []);
+      setLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const allTennis = [...tennisAtp, ...tennisWta];
   const totalMatches = football.length + allTennis.length;
+  const isDemoMode = football.some((match) => match.bookmaker.toLowerCase().includes("demo"));
 
   // Top predictions — strong picks first, then by confidence desc
   const topFootball = [...football]
@@ -336,6 +300,13 @@ export default async function HomePage() {
           View All Odds →
         </Link>
       </div>
+
+      {isDemoMode && (
+        <div className="rounded-xl border px-4 py-3 text-sm"
+          style={{ background: "rgba(245,166,35,0.08)", borderColor: "rgba(245,166,35,0.35)", color: "var(--warning)" }}>
+          MVP demo mode: seeded fixtures, model probabilities, and virtual wallet are active. Add `ODDS_API_KEY` later for live markets.
+        </div>
+      )}
 
       {/* ── Sport summary chips ── */}
       <div className="flex gap-3">

@@ -112,6 +112,7 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
   const kickoff = new Date(match.commenceTime).toLocaleString("en-GB", {
     weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "UTC",
   }) + " UTC";
+  const isDemo = match.bookmaker.toLowerCase().includes("demo");
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -121,6 +122,13 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
         style={{ color: "var(--secondary)" }}>
         ← Back to Odds
       </Link>
+
+      {isDemo && (
+        <div className="rounded-xl border px-4 py-3 text-sm"
+          style={{ background: "rgba(245,166,35,0.08)", borderColor: "rgba(245,166,35,0.35)", color: "var(--warning)" }}>
+          MVP demo mode: this match uses seeded model probabilities and demo odds for product testing.
+        </div>
+      )}
 
       {/* Match header */}
       <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
