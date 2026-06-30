@@ -131,3 +131,14 @@ For future work, every meaningful app update should be recorded in this file and
 - Added History to the desktop sidebar and linked it from Planner.
 - Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
 - Verified TypeScript, production build, `/planner` and `/history` HTTP responses, and in-app browser rendering of History and Planner save controls.
+
+## 2026-07-01 - Add Review Alerts
+
+- Added `/alerts` as a review queue for planned analysis items.
+- Alerts classifies active Match Plan items as urgent, due today, missing note, past kickoff, or scheduled.
+- Added summary metrics for active plan items, urgent reviews, due-today items, missing notes, and past-kickoff items.
+- Added alert filters and per-item note editing, status changes, and removal from the active plan.
+- Added quick links from Alerts to Planner and History.
+- Added Alerts to the desktop sidebar.
+- Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
+- Verified TypeScript, production build, `/alerts` HTTP response, and in-app browser rendering of the Alerts queue.
