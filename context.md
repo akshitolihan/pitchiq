@@ -120,3 +120,14 @@ For future work, every meaningful app update should be recorded in this file and
 - Added Lab to the desktop sidebar and mobile bottom navigation.
 - Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
 - Verified TypeScript, production build, `/lab` HTTP response, and in-app browser rendering of the new Lab controls.
+
+## 2026-07-01 - Add Saved Analysis History
+
+- Added local saved analysis session storage under `pitchiq_analysis_sessions`.
+- Added reusable session helpers in `src/lib/analysis-sessions.ts`.
+- Added a full-plan restore action in `src/contexts/BetSlipContext.tsx` so saved sessions can replace the active Match Plan.
+- Added Save Analysis Session controls to `/planner` with session name, label, and save confirmation.
+- Added `/history` as a saved analysis page with session search, label filtering, summary metrics, session cards, delete, and restore-to-planner.
+- Added History to the desktop sidebar and linked it from Planner.
+- Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
+- Verified TypeScript, production build, `/planner` and `/history` HTTP responses, and in-app browser rendering of History and Planner save controls.

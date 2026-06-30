@@ -32,6 +32,7 @@ type Action =
   | { type: "TOGGLE_SELECTION"; payload: BetSelection }
   | { type: "REMOVE"; id: string }
   | { type: "CLEAR" }
+  | { type: "REPLACE_PLAN"; selections: BetSelection[]; selectionMeta?: Record<string, SelectionMeta> }
   | { type: "SET_SELECTION_STATUS"; id: string; status: PlanStatus }
   | { type: "SET_SELECTION_NOTE"; id: string; note: string }
   | { type: "SET_STAKE"; stake: number }
@@ -130,6 +131,15 @@ function reducer(state: BetSlipState, action: Action): BetSlipState {
       };
     case "CLEAR":
       return { ...state, selections: [], selectionMeta: {} };
+    case "REPLACE_PLAN": {
+      const selections = withoutMutuallyExclusiveSelections(action.selections);
+      return {
+        ...state,
+        selections,
+        selectionMeta: cleanSelectionMeta(selections, action.selectionMeta),
+        open: false,
+      };
+    }
     case "SET_SELECTION_STATUS":
       return {
         ...state,
@@ -168,6 +178,7 @@ interface BetSlipCtx {
   toggleSelection: (sel: BetSelection) => void;
   removeSelection: (id: string) => void;
   clearSlip: () => void;
+  replacePlan: (selections: BetSelection[], selectionMeta?: Record<string, SelectionMeta>) => void;
   getSelectionMeta: (id: string) => SelectionMeta;
   setSelectionStatus: (id: string, status: PlanStatus) => void;
   setSelectionNote: (id: string, note: string) => void;
@@ -205,6 +216,9 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
   const toggleSelection = useCallback((sel: BetSelection) => dispatch({ type: "TOGGLE_SELECTION", payload: sel }), []);
   const removeSelection = useCallback((id: string) => dispatch({ type: "REMOVE", id }), []);
   const clearSlip = useCallback(() => dispatch({ type: "CLEAR" }), []);
+  const replacePlan = useCallback((selections: BetSelection[], selectionMeta?: Record<string, SelectionMeta>) => {
+    dispatch({ type: "REPLACE_PLAN", selections, selectionMeta });
+  }, []);
   const getSelectionMeta = useCallback((id: string) => state.selectionMeta[id] ?? DEFAULT_SELECTION_META, [state.selectionMeta]);
   const setSelectionStatus = useCallback((id: string, status: PlanStatus) => dispatch({ type: "SET_SELECTION_STATUS", id, status }), []);
   const setSelectionNote = useCallback((id: string, note: string) => dispatch({ type: "SET_SELECTION_NOTE", id, note }), []);
@@ -218,6 +232,7 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
       toggleSelection,
       removeSelection,
       clearSlip,
+      replacePlan,
       getSelectionMeta,
       setSelectionStatus,
       setSelectionNote,

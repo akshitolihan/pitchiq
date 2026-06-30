@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BetSelection, PlanStatus, useBetSlip } from "@/contexts/BetSlipContext";
+import { AnalysisSession, makeSessionName, readAnalysisSessions, writeAnalysisSessions } from "@/lib/analysis-sessions";
 
 const STATUS_OPTIONS: Array<{ value: PlanStatus; label: string; tone: string; bg: string }> = [
   { value: "watching", label: "Watching", tone: "var(--cyan, #06b6d4)", bg: "rgba(6,182,212,0.12)" },
@@ -18,6 +19,8 @@ const FILTERS: Array<{ value: Filter; label: string }> = [
   { value: "all", label: "All" },
   ...STATUS_OPTIONS.map(({ value, label }) => ({ value, label })),
 ];
+
+const SESSION_TAGS = ["Weekly Plan", "Watchlist", "High Confidence", "Tournament", "Custom"];
 
 function statusLabel(status: PlanStatus) {
   return STATUS_OPTIONS.find(option => option.value === status)?.label ?? "Watching";
@@ -92,6 +95,9 @@ export default function PlannerPage() {
   const [query, setQuery] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("kickoff");
   const [reviewOnly, setReviewOnly] = useState(false);
+  const [sessionName, setSessionName] = useState(makeSessionName());
+  const [sessionTag, setSessionTag] = useState(SESSION_TAGS[0]);
+  const [sessionMessage, setSessionMessage] = useState<string | null>(null);
 
   const selectionsWithMeta = useMemo(() => {
     return state.selections
@@ -171,6 +177,23 @@ export default function PlannerPage() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+  }
+
+  function saveSession() {
+    if (state.selections.length === 0) return;
+    const nowIso = new Date().toISOString();
+    const session: AnalysisSession = {
+      id: `session-${Date.now()}`,
+      name: sessionName.trim() || makeSessionName(),
+      tag: sessionTag,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      selections: state.selections,
+      selectionMeta: state.selectionMeta,
+    };
+    writeAnalysisSessions([session, ...readAnalysisSessions()].slice(0, 50));
+    setSessionMessage("Session saved to history");
+    setTimeout(() => setSessionMessage(null), 2500);
   }
 
   return (
@@ -256,6 +279,55 @@ export default function PlannerPage() {
           <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>{dueSoon} planned item{dueSoon === 1 ? "" : "s"} within 24 hours.</p>
         </button>
       </div>
+
+      <section className="rounded-xl border p-4 space-y-3" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+          <div className="flex-1">
+            <p className="text-xs font-bold uppercase" style={{ color: "var(--secondary)" }}>Save analysis session</p>
+            <input
+              value={sessionName}
+              onChange={event => setSessionName(event.target.value)}
+              className="mt-2 w-full rounded-xl px-4 py-3 text-sm outline-none"
+              style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+            />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase" style={{ color: "var(--secondary)" }}>Label</p>
+            <select
+              value={sessionTag}
+              onChange={event => setSessionTag(event.target.value)}
+              className="mt-2 rounded-xl px-4 py-3 text-sm font-bold outline-none"
+              style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+            >
+              {SESSION_TAGS.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={saveSession}
+            disabled={state.selections.length === 0}
+            className="px-4 py-3 rounded-xl text-sm font-black"
+            style={{
+              background: state.selections.length > 0 ? "var(--green)" : "var(--bg)",
+              color: state.selections.length > 0 ? "#000" : "rgba(255,255,255,0.24)",
+              cursor: state.selections.length > 0 ? "pointer" : "not-allowed",
+            }}
+          >
+            Save session
+          </button>
+          <Link
+            href="/history"
+            className="px-4 py-3 rounded-xl text-sm font-bold border text-center"
+            style={{ borderColor: "var(--border)", color: "var(--green)", background: "var(--bg)" }}
+          >
+            History
+          </Link>
+        </div>
+        {sessionMessage && (
+          <p className="text-xs font-bold" style={{ color: "var(--green)" }}>{sessionMessage}</p>
+        )}
+      </section>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
