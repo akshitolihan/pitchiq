@@ -12,6 +12,7 @@ const STATUS_OPTIONS: Array<{ value: PlanStatus; label: string; tone: string; bg
 ];
 
 type Filter = "all" | PlanStatus;
+type SortMode = "kickoff" | "status" | "odds";
 
 const FILTERS: Array<{ value: Filter; label: string }> = [
   { value: "all", label: "All" },
@@ -68,6 +69,16 @@ function formatTime(selection: BetSelection) {
   }) + " UTC";
 }
 
+function kickoffTime(selection: BetSelection) {
+  if (!selection.commenceTime) return Number.MAX_SAFE_INTEGER;
+  const time = new Date(selection.commenceTime).getTime();
+  return Number.isNaN(time) ? Number.MAX_SAFE_INTEGER : time;
+}
+
+function escapeCsv(value: string | number) {
+  return `"${String(value).replace(/"/g, '""')}"`;
+}
+
 export default function PlannerPage() {
   const {
     state,
@@ -78,18 +89,36 @@ export default function PlannerPage() {
     setSelectionNote,
   } = useBetSlip();
   const [filter, setFilter] = useState<Filter>("all");
+  const [query, setQuery] = useState("");
+  const [sortMode, setSortMode] = useState<SortMode>("kickoff");
+  const [reviewOnly, setReviewOnly] = useState(false);
 
   const selectionsWithMeta = useMemo(() => {
     return state.selections
       .map(selection => ({ selection, meta: getSelectionMeta(selection.id) }))
       .sort((a, b) => {
-        const aTime = a.selection.commenceTime ? new Date(a.selection.commenceTime).getTime() : Number.MAX_SAFE_INTEGER;
-        const bTime = b.selection.commenceTime ? new Date(b.selection.commenceTime).getTime() : Number.MAX_SAFE_INTEGER;
-        return aTime - bTime || a.selection.matchTitle.localeCompare(b.selection.matchTitle);
+        if (sortMode === "odds") return b.selection.odds - a.selection.odds;
+        if (sortMode === "status") return statusLabel(a.meta.status).localeCompare(statusLabel(b.meta.status));
+        return kickoffTime(a.selection) - kickoffTime(b.selection) || a.selection.matchTitle.localeCompare(b.selection.matchTitle);
       });
-  }, [getSelectionMeta, state.selections]);
+  }, [getSelectionMeta, sortMode, state.selections]);
 
-  const filtered = selectionsWithMeta.filter(item => filter === "all" || item.meta.status === filter);
+  const normalizedQuery = query.trim().toLowerCase();
+  const filtered = selectionsWithMeta.filter(item => {
+    const statusMatch = filter === "all" || item.meta.status === filter;
+    if (!statusMatch) return false;
+    if (reviewOnly && (item.meta.status === "avoid" || item.meta.note.trim().length > 0)) return false;
+    if (!normalizedQuery) return true;
+    const haystack = [
+      item.selection.matchTitle,
+      item.selection.market,
+      item.selection.outcome,
+      item.selection.competition ?? "",
+      item.meta.note,
+      statusLabel(item.meta.status),
+    ].join(" ").toLowerCase();
+    return haystack.includes(normalizedQuery);
+  });
 
   const groups = filtered.reduce<Record<string, typeof filtered>>((acc, item) => {
     const key = dateKey(item.selection);
@@ -107,6 +136,42 @@ export default function PlannerPage() {
     ...option,
     count: selectionsWithMeta.filter(item => item.meta.status === option.value).length,
   }));
+
+  const now = Date.now();
+  const nextItem = selectionsWithMeta.find(item => kickoffTime(item.selection) !== Number.MAX_SAFE_INTEGER);
+  const dueSoon = selectionsWithMeta.filter(item => {
+    const time = kickoffTime(item.selection);
+    return time !== Number.MAX_SAFE_INTEGER && time >= now && time <= now + 24 * 60 * 60 * 1000;
+  }).length;
+  const needsReview = selectionsWithMeta.filter(item => item.meta.status !== "avoid" && item.meta.note.trim().length === 0).length;
+  const strongInterest = selectionsWithMeta.filter(item => item.meta.status === "strong-interest").length;
+
+  function exportPlan() {
+    const rows = selectionsWithMeta.map(({ selection, meta }) => [
+      selection.matchTitle,
+      selection.sport,
+      selection.competition ?? "",
+      selection.commenceTime ?? "",
+      selection.market,
+      selection.outcome,
+      selection.odds,
+      statusLabel(meta.status),
+      meta.note,
+    ]);
+    const csv = [
+      ["Match", "Sport", "Competition", "Kickoff", "Market", "Outcome", "Model Odds", "Status", "Note"],
+      ...rows,
+    ].map(row => row.map(escapeCsv).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `pitchiq-planner-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="min-h-[100dvh] px-4 py-4 md:px-6 md:py-6 space-y-5">
@@ -143,7 +208,53 @@ export default function PlannerPage() {
           >
             Clear all
           </button>
+          <button
+            onClick={exportPlan}
+            disabled={state.selections.length === 0}
+            className="px-4 py-2 rounded-xl text-sm font-bold border"
+            style={{
+              borderColor: "var(--border)",
+              color: state.selections.length > 0 ? "var(--secondary)" : "rgba(255,255,255,0.24)",
+              background: "var(--surface)",
+              cursor: state.selections.length > 0 ? "pointer" : "not-allowed",
+            }}
+          >
+            Export
+          </button>
         </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <p className="text-xs font-bold uppercase" style={{ color: "var(--secondary)" }}>Next review</p>
+          <p className="font-black mt-1 truncate">
+            {nextItem ? nextItem.selection.matchTitle : "No dated plans"}
+          </p>
+          <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>
+            {nextItem ? `${formatDate(dateKey(nextItem.selection))} at ${formatTime(nextItem.selection)}` : "Add selections with kickoff times from Markets."}
+          </p>
+        </div>
+        <button
+          onClick={() => setFilter("strong-interest")}
+          className="rounded-xl border p-4 text-left"
+          style={{ background: "rgba(22,199,132,0.08)", borderColor: "rgba(22,199,132,0.35)" }}
+        >
+          <p className="text-xs font-bold uppercase" style={{ color: "var(--green)" }}>Priority watchlist</p>
+          <p className="text-2xl font-black mt-1 tabular-nums">{strongInterest}</p>
+          <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>Strong-interest plans ready for deeper analysis.</p>
+        </button>
+        <button
+          onClick={() => setReviewOnly(value => !value)}
+          className="rounded-xl border p-4 text-left"
+          style={{
+            background: reviewOnly ? "rgba(245,166,35,0.16)" : needsReview > 0 ? "rgba(245,166,35,0.08)" : "var(--surface)",
+            borderColor: reviewOnly || needsReview > 0 ? "rgba(245,166,35,0.35)" : "var(--border)",
+          }}
+        >
+          <p className="text-xs font-bold uppercase" style={{ color: needsReview > 0 ? "var(--warning)" : "var(--secondary)" }}>Review needed</p>
+          <p className="text-2xl font-black mt-1 tabular-nums">{needsReview}</p>
+          <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>{dueSoon} planned item{dueSoon === 1 ? "" : "s"} within 24 hours.</p>
+        </button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -185,6 +296,44 @@ export default function PlannerPage() {
             </button>
           );
         })}
+        {reviewOnly && (
+          <button
+            onClick={() => setReviewOnly(false)}
+            className="shrink-0 px-3 py-2 rounded-lg text-xs font-bold border"
+            style={{ background: "rgba(245,166,35,0.12)", color: "var(--warning)", borderColor: "rgba(245,166,35,0.35)" }}
+          >
+            Needs note
+          </button>
+        )}
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+        <input
+          value={query}
+          onChange={event => setQuery(event.target.value)}
+          placeholder="Search match, market, outcome, competition, note..."
+          className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+          style={{ background: "var(--surface)", color: "var(--white)", border: "1px solid var(--border)" }}
+        />
+        <div className="flex rounded-xl border overflow-hidden" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+          {([
+            { value: "kickoff", label: "Kickoff" },
+            { value: "status", label: "Status" },
+            { value: "odds", label: "Odds" },
+          ] as Array<{ value: SortMode; label: string }>).map(option => (
+            <button
+              key={option.value}
+              onClick={() => setSortMode(option.value)}
+              className="px-3 py-3 text-xs font-bold"
+              style={{
+                background: sortMode === option.value ? "var(--green)" : "transparent",
+                color: sortMode === option.value ? "#000" : "var(--secondary)",
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {state.selections.length === 0 ? (
@@ -203,9 +352,9 @@ export default function PlannerPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border px-5 py-10 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-          <p className="font-black">No matches in this status</p>
+          <p className="font-black">No matches found</p>
           <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
-            Switch filters or update a match status below.
+            Adjust the search, status, or review filter.
           </p>
         </div>
       ) : (

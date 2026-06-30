@@ -85,3 +85,13 @@ For future work, every meaningful app update should be recorded in this file and
 - Updated main football and tennis market cards to attach kickoff time and competition/tournament to saved selections.
 - Updated desktop sidebar and mobile bottom navigation so `/planner` is reachable as the planning surface, while `/betting` is labeled as Markets.
 - Verified TypeScript, production build, backend health, frontend `/planner`, and in-app browser rendering on `http://127.0.0.1:3000/planner`.
+
+## 2026-06-30 - Improve Planner Workspace
+
+- Added planner intelligence cards for next review, priority watchlist, review-needed count, and due-soon count.
+- Added search across match title, market, outcome, competition, note, and status.
+- Added sort controls for kickoff, status, and model odds.
+- Added a review-needed filter that highlights planned items missing notes.
+- Added CSV export for saved Match Plan selections, including kickoff, market, outcome, model odds, status, and notes.
+- Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
+- Verified TypeScript, production build, `/planner` HTTP response, and in-app browser rendering of the new planner controls.
