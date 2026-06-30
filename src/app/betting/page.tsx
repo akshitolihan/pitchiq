@@ -148,7 +148,13 @@ function FootballCard({ m }: { m: FootballMatch }) {
   });
   const pred = getFootballPrediction(m.homeTeam, m.awayTeam, m.odds.home, m.odds.draw, m.odds.away);
   const title = `${m.homeTeam} vs ${m.awayTeam}`;
-  const base = { matchId: m.id, matchTitle: title, sport: "football" as const };
+  const base = {
+    matchId: m.id,
+    matchTitle: title,
+    sport: "football" as const,
+    commenceTime: m.commenceTime,
+    competition: m.competition ?? "Football",
+  };
 
   return (
     <div className="rounded-2xl border overflow-hidden"
@@ -210,7 +216,13 @@ function TennisCard({ m }: { m: TennisMatch }) {
   const mkts = computeTennisMarkets(m.odds.p1, m.odds.p2);
   const pred = getTennisPrediction(m.player1, m.player2, m.odds.p1, m.odds.p2);
   const title = `${m.player1} vs ${m.player2}`;
-  const base = { matchId: m.id, matchTitle: title, sport: "tennis" as const };
+  const base = {
+    matchId: m.id,
+    matchTitle: title,
+    sport: "tennis" as const,
+    commenceTime: m.commenceTime,
+    competition: m.tournament,
+  };
   const surfIcon = m.surface === "Grass" ? "🌿" : m.surface === "Clay" ? "🟤" : "💙";
   const levelColor = m.level === "Grand Slam" ? "#F59E0B"
     : m.level.includes("1000") ? "var(--cyan)" : "var(--secondary)";

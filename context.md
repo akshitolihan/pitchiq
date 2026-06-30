@@ -75,3 +75,13 @@ For future work, every meaningful app update should be recorded in this file and
 - Added note fields to Match Plan items on the main Plan page so users can document lineup dependencies, risk, and model disagreement.
 - Changed the main Plan panel save action to persist locally instead of placing/clearing a virtual bet.
 - Updated global drawer, mobile nav, sidebar labels, and metadata language toward analysis/planning/simulation terminology.
+
+## 2026-06-30 - Add Dedicated Planner Page
+
+- Added `/planner` as a dedicated future match planning dashboard.
+- Planner reads the saved Match Plan selections from local storage and shows totals by status: Watching, Strong interest, Review later, and Avoid.
+- Planner supports filtering by status, grouping saved selections by kickoff date when available, editing per-match notes, changing status, removing individual selections, and clearing the plan.
+- Extended `BetSelection` with optional `commenceTime` and `competition` fields so newly saved selections can appear with planning context.
+- Updated main football and tennis market cards to attach kickoff time and competition/tournament to saved selections.
+- Updated desktop sidebar and mobile bottom navigation so `/planner` is reachable as the planning surface, while `/betting` is labeled as Markets.
+- Verified TypeScript, production build, backend health, frontend `/planner`, and in-app browser rendering on `http://127.0.0.1:3000/planner`.

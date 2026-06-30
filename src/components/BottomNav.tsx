@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation";
 
 const items = [
   { href: "/", label: "Home", icon: "H" },
-  { href: "/live", label: "Live", icon: "L" },
-  { href: "/betting", label: "Plan", icon: "P" },
+  { href: "/planner", label: "Plan", icon: "P" },
+  { href: "/betting", label: "Markets", icon: "M" },
   { href: "/wallet", label: "Sim", icon: "S" },
 ];
 
@@ -28,9 +28,6 @@ export default function BottomNav() {
             {active && (
               <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-b-full"
                 style={{ background: "var(--green)" }} />
-            )}
-            {label === "Live" && (
-              <span className="absolute top-2 right-[calc(50%-12px)] w-1.5 h-1.5 rounded-full live-dot" style={{ background: "var(--danger)" }} />
             )}
           </Link>
         );

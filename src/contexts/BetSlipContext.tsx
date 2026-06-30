@@ -7,6 +7,8 @@ export interface BetSelection {
   matchId: string;
   matchTitle: string;   // "Netherlands vs Sweden"
   sport: "football" | "tennis";
+  commenceTime?: string;
+  competition?: string;
   market: string;       // "1X2" | "Double Chance" | "Draw No Bet" | "BTTS" | "Over/Under" | "Match Winner"
   outcome: string;      // "Netherlands" | "1X" | "Home DNB" | "Yes" | "Over 2.5"
   odds: number;

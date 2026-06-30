@@ -6,7 +6,8 @@ import { useWallet } from "@/contexts/WalletContext";
 const navItems = [
   { href: "/",        label: "Home",     icon: HomeIcon },
   { href: "/live",    label: "Live",     icon: LiveIcon,    dot: true },
-  { href: "/betting", label: "Plan",     icon: OddsIcon },
+  { href: "/planner", label: "Planner",  icon: PlannerIcon },
+  { href: "/betting", label: "Markets",  icon: OddsIcon },
   { href: "/matches", label: "Matches",  icon: MatchesIcon },
   { href: "/fifa",    label: "FIFA WC",  icon: TrophyIcon },
   { href: "/wallet",  label: "Sim",      icon: WalletIcon },
@@ -134,6 +135,19 @@ function OddsIcon({ size, active }: { size: number; active: boolean }) {
       <rect x="2" y="3" width="20" height="14" rx="2" />
       <line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
       <line x1="7" y1="8" x2="7" y2="12" /><line x1="12" y1="6" x2="12" y2="12" /><line x1="17" y1="9" x2="17" y2="12" />
+    </svg>
+  );
+}
+function PlannerIcon({ size, active }: { size: number; active: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="17" rx="2" />
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <path d="M3 10h18" />
+      <path d="M8 15h.01" />
+      <path d="M12 15h4" />
     </svg>
   );
 }
