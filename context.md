@@ -142,3 +142,13 @@ For future work, every meaningful app update should be recorded in this file and
 - Added Alerts to the desktop sidebar.
 - Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
 - Verified TypeScript, production build, `/alerts` HTTP response, and in-app browser rendering of the Alerts queue.
+
+## 2026-07-01 - Enhance Match Reports
+
+- Upgraded football and tennis match detail pages into richer analysis reports.
+- Added report summary blocks with model recommendation, confidence context, separation/risk explanation, and risk flags.
+- Added planning action panels so the recommended outcome can be marked Strong interest or Review later directly from the report.
+- Added pre-match review checklists for football and tennis contexts.
+- Updated detail-page market selections to carry kickoff time and competition/tournament metadata into Planner, Alerts, Lab, and History.
+- Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
+- Verified TypeScript, production build, football report HTTP response, and in-app browser rendering of the enhanced report controls.

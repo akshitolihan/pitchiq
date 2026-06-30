@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { computeFootballMarkets, getFootballPrediction } from "@/lib/odds-utils";
 import OddsButton from "@/components/OddsButton";
+import { BetSelection, PlanStatus, useBetSlip } from "@/contexts/BetSlipContext";
 
 const FLAG_MAP: Record<string, string> = {
   "Netherlands": "🇳🇱", "Sweden": "🇸🇪", "Germany": "🇩🇪", "Ivory Coast": "🇨🇮",
@@ -46,6 +47,64 @@ function MarketGroup({ title, description, children }: MarketGroupProps) {
         <p className="text-xs mt-0.5" style={{ color: "var(--secondary)" }}>{description}</p>
       </div>
       <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
+function RiskFlag({ label, tone = "var(--secondary)" }: { label: string; tone?: string }) {
+  return (
+    <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: "var(--bg)", color: tone }}>
+      {label}
+    </span>
+  );
+}
+
+function ReportActionPanel({ selection, note }: { selection: BetSelection; note: string }) {
+  const { toggleSelection, isSelected, setSelectionStatus, setSelectionNote } = useBetSlip();
+  const selected = isSelected(selection.id);
+
+  function addToPlan(status: PlanStatus) {
+    if (!selected) toggleSelection(selection);
+    setSelectionStatus(selection.id, status);
+    setSelectionNote(selection.id, note);
+  }
+
+  return (
+    <div className="rounded-2xl border p-4 space-y-3" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-black text-sm">Planning actions</h3>
+          <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>Save the recommended outcome into the analysis workflow.</p>
+        </div>
+        <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: selected ? "rgba(22,199,132,0.12)" : "var(--bg)", color: selected ? "var(--green)" : "var(--secondary)" }}>
+          {selected ? "In planner" : "Not planned"}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={() => addToPlan("strong-interest")} className="rounded-xl px-3 py-2.5 text-sm font-black" style={{ background: "var(--green)", color: "#000" }}>
+          Mark strong
+        </button>
+        <button onClick={() => addToPlan("review-later")} className="rounded-xl px-3 py-2.5 text-sm font-bold border" style={{ background: "var(--bg)", color: "var(--warning)", borderColor: "rgba(245,166,35,0.35)" }}>
+          Review later
+        </button>
+      </div>
+      <p className="text-xs" style={{ color: "var(--secondary)" }}>{selection.market}: {selection.outcome} at model odds {selection.odds.toFixed(2)}</p>
+    </div>
+  );
+}
+
+function ReviewChecklist() {
+  const items = ["Lineups", "Injuries/team news", "Market movement", "Weather and venue"];
+  return (
+    <div className="rounded-2xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <h3 className="font-black text-sm mb-3">Pre-match checklist</h3>
+      <div className="grid grid-cols-2 gap-2">
+        {items.map(item => (
+          <div key={item} className="rounded-xl px-3 py-2 text-xs font-bold" style={{ background: "var(--bg)", color: "var(--secondary)" }}>
+            {item}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -107,12 +166,35 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
   });
 
   const matchTitle = `${match.homeTeam} vs ${match.awayTeam}`;
+  const baseSelection = {
+    matchId: match.id,
+    matchTitle,
+    sport: "football" as const,
+    commenceTime: match.commenceTime,
+    competition: match.competition ?? "Football",
+  };
   const hf = FLAG_MAP[match.homeTeam] ?? "🏳️";
   const af = FLAG_MAP[match.awayTeam] ?? "🏳️";
   const kickoff = new Date(match.commenceTime).toLocaleString("en-GB", {
     weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "UTC",
   }) + " UTC";
   const isDemo = match.bookmaker.toLowerCase().includes("demo");
+  const predLabel = pred.outcome === "Home Win" ? `${match.homeTeam} to Win` : pred.outcome === "Away Win" ? `${match.awayTeam} to Win` : "Draw";
+  const recommendedSelection: BetSelection = {
+    id: `${match.id}||1X2||${pred.outcome === "Home Win" ? "home" : pred.outcome === "Away Win" ? "away" : "draw"}`,
+    ...baseSelection,
+    market: "1X2",
+    outcome: pred.outcome === "Home Win" ? match.homeTeam : pred.outcome === "Away Win" ? match.awayTeam : "Draw",
+    odds: pred.outcome === "Home Win" ? markets.homeWin : pred.outcome === "Away Win" ? markets.awayWin : markets.draw,
+  };
+  const sortedProbabilities = [pred.homeP, pred.drawP, pred.awayP].sort((a, b) => b - a);
+  const separation = sortedProbabilities[0] - sortedProbabilities[1];
+  const riskFlags = [
+    pred.tier === "Competitive" ? "Weak confidence" : null,
+    separation < 10 ? "Thin edge" : "Clear separation",
+    isDemo ? "Demo data" : "Live feed",
+    !match.commenceTime ? "Kickoff missing" : null,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -194,45 +276,67 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
         );
       })()}
 
+      <div className="rounded-2xl border p-5 space-y-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div>
+          <p className="text-xs font-black uppercase tracking-wider" style={{ color: "var(--green)" }}>Report summary</p>
+          <h2 className="text-xl font-black mt-1">{predLabel}</h2>
+          <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
+            The model currently rates this as a {pred.tier.toLowerCase()} confidence football report with {separation.toFixed(0)} percentage points between the top two outcomes.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {riskFlags.map(flag => (
+            <RiskFlag key={flag} label={flag} tone={flag === "Weak confidence" || flag === "Thin edge" ? "var(--warning)" : "var(--secondary)"} />
+          ))}
+        </div>
+      </div>
+
+      <ReportActionPanel
+        selection={recommendedSelection}
+        note={`Model report: ${predLabel}, ${pred.confidence.toFixed(0)}% confidence. Recheck lineups and market movement before kickoff.`}
+      />
+
+      <ReviewChecklist />
+
       {/* Market 1: 1X2 */}
       <MarketGroup title="1X2 — Match Result" description="Pick the result at full time (90 minutes)">
         <div className="flex gap-2">
-          <OddsButton size="lg" selection={{ id: `${match.id}||1X2||home`, matchId: match.id, matchTitle, sport: "football", market: "1X2", outcome: match.homeTeam, odds: markets.homeWin }} label={`${hf} Home`} />
-          <OddsButton size="lg" selection={{ id: `${match.id}||1X2||draw`, matchId: match.id, matchTitle, sport: "football", market: "1X2", outcome: "Draw", odds: markets.draw }} label="X Draw" />
-          <OddsButton size="lg" selection={{ id: `${match.id}||1X2||away`, matchId: match.id, matchTitle, sport: "football", market: "1X2", outcome: match.awayTeam, odds: markets.awayWin }} label={`${af} Away`} />
+          <OddsButton size="lg" selection={{ id: `${match.id}||1X2||home`, ...baseSelection, market: "1X2", outcome: match.homeTeam, odds: markets.homeWin }} label={`${hf} Home`} />
+          <OddsButton size="lg" selection={{ id: `${match.id}||1X2||draw`, ...baseSelection, market: "1X2", outcome: "Draw", odds: markets.draw }} label="X Draw" />
+          <OddsButton size="lg" selection={{ id: `${match.id}||1X2||away`, ...baseSelection, market: "1X2", outcome: match.awayTeam, odds: markets.awayWin }} label={`${af} Away`} />
         </div>
       </MarketGroup>
 
       {/* Market 2: Double Chance */}
       <MarketGroup title="Double Chance" description="Cover two outcomes — if one of your two selected results occurs, you win">
         <div className="flex gap-2">
-          <OddsButton size="md" selection={{ id: `${match.id}||DC||1X`, matchId: match.id, matchTitle, sport: "football", market: "Double Chance", outcome: "1X (Home or Draw)", odds: markets.dc1X }} label="1X" sublabel="Home or Draw" />
-          <OddsButton size="md" selection={{ id: `${match.id}||DC||X2`, matchId: match.id, matchTitle, sport: "football", market: "Double Chance", outcome: "X2 (Draw or Away)", odds: markets.dcX2 }} label="X2" sublabel="Draw or Away" />
-          <OddsButton size="md" selection={{ id: `${match.id}||DC||12`, matchId: match.id, matchTitle, sport: "football", market: "Double Chance", outcome: "12 (Home or Away)", odds: markets.dc12 }} label="12" sublabel="Home or Away" />
+          <OddsButton size="md" selection={{ id: `${match.id}||DC||1X`, ...baseSelection, market: "Double Chance", outcome: "1X (Home or Draw)", odds: markets.dc1X }} label="1X" sublabel="Home or Draw" />
+          <OddsButton size="md" selection={{ id: `${match.id}||DC||X2`, ...baseSelection, market: "Double Chance", outcome: "X2 (Draw or Away)", odds: markets.dcX2 }} label="X2" sublabel="Draw or Away" />
+          <OddsButton size="md" selection={{ id: `${match.id}||DC||12`, ...baseSelection, market: "Double Chance", outcome: "12 (Home or Away)", odds: markets.dc12 }} label="12" sublabel="Home or Away" />
         </div>
       </MarketGroup>
 
       {/* Market 3: Draw No Bet */}
       <MarketGroup title="Draw No Bet" description="If the match ends in a draw, your stake is returned. Otherwise win or lose.">
         <div className="flex gap-2">
-          <OddsButton size="lg" selection={{ id: `${match.id}||DNB||home`, matchId: match.id, matchTitle, sport: "football", market: "Draw No Bet", outcome: `${match.homeTeam} DNB`, odds: markets.dnbHome }} label={`${hf} ${match.homeTeam}`} sublabel="DNB" />
-          <OddsButton size="lg" selection={{ id: `${match.id}||DNB||away`, matchId: match.id, matchTitle, sport: "football", market: "Draw No Bet", outcome: `${match.awayTeam} DNB`, odds: markets.dnbAway }} label={`${af} ${match.awayTeam}`} sublabel="DNB" />
+          <OddsButton size="lg" selection={{ id: `${match.id}||DNB||home`, ...baseSelection, market: "Draw No Bet", outcome: `${match.homeTeam} DNB`, odds: markets.dnbHome }} label={`${hf} ${match.homeTeam}`} sublabel="DNB" />
+          <OddsButton size="lg" selection={{ id: `${match.id}||DNB||away`, ...baseSelection, market: "Draw No Bet", outcome: `${match.awayTeam} DNB`, odds: markets.dnbAway }} label={`${af} ${match.awayTeam}`} sublabel="DNB" />
         </div>
       </MarketGroup>
 
       {/* Market 4: BTTS */}
       <MarketGroup title="Both Teams to Score (BTTS)" description="Will both teams score at least one goal?">
         <div className="flex gap-2">
-          <OddsButton size="lg" selection={{ id: `${match.id}||BTTS||yes`, matchId: match.id, matchTitle, sport: "football", market: "BTTS", outcome: "Both Teams to Score — Yes", odds: markets.bttsYes }} label="Yes — BTTS" />
-          <OddsButton size="lg" selection={{ id: `${match.id}||BTTS||no`, matchId: match.id, matchTitle, sport: "football", market: "BTTS", outcome: "Both Teams to Score — No", odds: markets.bttsNo }} label="No — BTTS" />
+          <OddsButton size="lg" selection={{ id: `${match.id}||BTTS||yes`, ...baseSelection, market: "BTTS", outcome: "Both Teams to Score — Yes", odds: markets.bttsYes }} label="Yes — BTTS" />
+          <OddsButton size="lg" selection={{ id: `${match.id}||BTTS||no`, ...baseSelection, market: "BTTS", outcome: "Both Teams to Score — No", odds: markets.bttsNo }} label="No — BTTS" />
         </div>
       </MarketGroup>
 
       {/* Market 5: Over/Under */}
       <MarketGroup title={`Total Goals — Over/Under ${match.odds.totalLine}`} description="Total goals in the match at full time">
         <div className="flex gap-2">
-          <OddsButton size="lg" selection={{ id: `${match.id}||OU||over`, matchId: match.id, matchTitle, sport: "football", market: `Over/Under ${match.odds.totalLine}`, outcome: `Over ${match.odds.totalLine} Goals`, odds: markets.over25 }} label={`Over ${match.odds.totalLine}`} />
-          <OddsButton size="lg" selection={{ id: `${match.id}||OU||under`, matchId: match.id, matchTitle, sport: "football", market: `Over/Under ${match.odds.totalLine}`, outcome: `Under ${match.odds.totalLine} Goals`, odds: markets.under25 }} label={`Under ${match.odds.totalLine}`} />
+          <OddsButton size="lg" selection={{ id: `${match.id}||OU||over`, ...baseSelection, market: `Over/Under ${match.odds.totalLine}`, outcome: `Over ${match.odds.totalLine} Goals`, odds: markets.over25 }} label={`Over ${match.odds.totalLine}`} />
+          <OddsButton size="lg" selection={{ id: `${match.id}||OU||under`, ...baseSelection, market: `Over/Under ${match.odds.totalLine}`, outcome: `Under ${match.odds.totalLine} Goals`, odds: markets.under25 }} label={`Under ${match.odds.totalLine}`} />
         </div>
       </MarketGroup>
 
@@ -242,3 +346,4 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
     </div>
   );
 }
+

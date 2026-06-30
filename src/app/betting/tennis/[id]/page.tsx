@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { computeTennisMarkets, getTennisPrediction } from "@/lib/odds-utils";
 import OddsButton from "@/components/OddsButton";
+import { BetSelection, PlanStatus, useBetSlip } from "@/contexts/BetSlipContext";
 
 interface TennisMatch {
   id: string;
@@ -25,6 +26,64 @@ function MarketGroup({ title, description, children }: { title: string; descript
         <p className="text-xs mt-0.5" style={{ color: "var(--secondary)" }}>{description}</p>
       </div>
       <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
+function RiskFlag({ label, tone = "var(--secondary)" }: { label: string; tone?: string }) {
+  return (
+    <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: "var(--bg)", color: tone }}>
+      {label}
+    </span>
+  );
+}
+
+function ReportActionPanel({ selection, note }: { selection: BetSelection; note: string }) {
+  const { toggleSelection, isSelected, setSelectionStatus, setSelectionNote } = useBetSlip();
+  const selected = isSelected(selection.id);
+
+  function addToPlan(status: PlanStatus) {
+    if (!selected) toggleSelection(selection);
+    setSelectionStatus(selection.id, status);
+    setSelectionNote(selection.id, note);
+  }
+
+  return (
+    <div className="rounded-2xl border p-4 space-y-3" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-black text-sm">Planning actions</h3>
+          <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>Save the recommended outcome into the analysis workflow.</p>
+        </div>
+        <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: selected ? "rgba(22,199,132,0.12)" : "var(--bg)", color: selected ? "var(--green)" : "var(--secondary)" }}>
+          {selected ? "In planner" : "Not planned"}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={() => addToPlan("strong-interest")} className="rounded-xl px-3 py-2.5 text-sm font-black" style={{ background: "var(--green)", color: "#000" }}>
+          Mark strong
+        </button>
+        <button onClick={() => addToPlan("review-later")} className="rounded-xl px-3 py-2.5 text-sm font-bold border" style={{ background: "var(--bg)", color: "var(--warning)", borderColor: "rgba(245,166,35,0.35)" }}>
+          Review later
+        </button>
+      </div>
+      <p className="text-xs" style={{ color: "var(--secondary)" }}>{selection.market}: {selection.outcome} at model odds {selection.odds.toFixed(2)}</p>
+    </div>
+  );
+}
+
+function ReviewChecklist() {
+  const items = ["Fitness/news", "Surface fit", "Recent workload", "Market movement"];
+  return (
+    <div className="rounded-2xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <h3 className="font-black text-sm mb-3">Pre-match checklist</h3>
+      <div className="grid grid-cols-2 gap-2">
+        {items.map(item => (
+          <div key={item} className="rounded-xl px-3 py-2 text-xs font-bold" style={{ background: "var(--bg)", color: "var(--secondary)" }}>
+            {item}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -68,6 +127,13 @@ export default function TennisMatchPage({ params }: { params: { id: string } }) 
   const markets = computeTennisMarkets(match.odds.p1, match.odds.p2);
   const pred = getTennisPrediction(match.player1, match.player2, match.odds.p1, match.odds.p2);
   const matchTitle = `${match.player1} vs ${match.player2}`;
+  const baseSelection = {
+    matchId: match.id,
+    matchTitle,
+    sport: "tennis" as const,
+    commenceTime: match.commenceTime,
+    competition: match.tournament,
+  };
   const kickoff = new Date(match.commenceTime).toLocaleString("en-GB", {
     weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "UTC",
   }) + " UTC";
@@ -75,6 +141,21 @@ export default function TennisMatchPage({ params }: { params: { id: string } }) 
   const surfaceIcon = match.surface === "Grass" ? "🌿" : match.surface === "Clay" ? "🟤" : "💙";
   const levelColor = match.level === "Grand Slam" ? "#F59E0B" :
     match.level.includes("500") || match.level.includes("1000") ? "var(--cyan)" : "var(--secondary)";
+  const p1Selected = pred.winnerLabel === match.player1;
+  const confidenceGap = Math.abs(pred.p1P - pred.p2P);
+  const recommendedSelection: BetSelection = {
+    id: `${match.id}||MW||${p1Selected ? "p1" : "p2"}`,
+    ...baseSelection,
+    market: "Match Winner",
+    outcome: pred.winnerLabel,
+    odds: p1Selected ? markets.p1Win : markets.p2Win,
+  };
+  const riskFlags = [
+    pred.tier === "Competitive" ? "Weak confidence" : null,
+    confidenceGap < 12 ? "Thin edge" : "Clear separation",
+    match.surface,
+    match.level,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -154,14 +235,36 @@ export default function TennisMatchPage({ params }: { params: { id: string } }) 
         );
       })()}
 
+      <div className="rounded-2xl border p-5 space-y-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div>
+          <p className="text-xs font-black uppercase tracking-wider" style={{ color: "var(--green)" }}>Report summary</p>
+          <h2 className="text-xl font-black mt-1">{pred.winnerLabel} to Win</h2>
+          <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
+            The model currently rates this as a {pred.tier.toLowerCase()} confidence tennis report with a {confidenceGap.toFixed(0)} point separation between players.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {riskFlags.map(flag => (
+            <RiskFlag key={flag} label={flag} tone={flag === "Weak confidence" || flag === "Thin edge" ? "var(--warning)" : "var(--secondary)"} />
+          ))}
+        </div>
+      </div>
+
+      <ReportActionPanel
+        selection={recommendedSelection}
+        note={`Model report: ${pred.winnerLabel} to win, ${pred.confidence.toFixed(0)}% confidence. Recheck player news, surface fit, and market movement before start.`}
+      />
+
+      <ReviewChecklist />
+
       {/* Market 1: Match Winner */}
       <MarketGroup title="Match Winner" description="Who wins the match outright?">
         <div className="flex gap-3">
           <OddsButton size="lg"
-            selection={{ id: `${match.id}||MW||p1`, matchId: match.id, matchTitle, sport: "tennis", market: "Match Winner", outcome: match.player1, odds: markets.p1Win }}
+            selection={{ id: `${match.id}||MW||p1`, ...baseSelection, market: "Match Winner", outcome: match.player1, odds: markets.p1Win }}
             label={match.player1} />
           <OddsButton size="lg"
-            selection={{ id: `${match.id}||MW||p2`, matchId: match.id, matchTitle, sport: "tennis", market: "Match Winner", outcome: match.player2, odds: markets.p2Win }}
+            selection={{ id: `${match.id}||MW||p2`, ...baseSelection, market: "Match Winner", outcome: match.player2, odds: markets.p2Win }}
             label={match.player2} />
         </div>
       </MarketGroup>
@@ -172,19 +275,19 @@ export default function TennisMatchPage({ params }: { params: { id: string } }) 
           <p className="text-xs font-semibold mb-2" style={{ color: "var(--secondary)" }}>{match.player1} wins</p>
           <div className="flex gap-2 mb-3">
             <OddsButton size="md"
-              selection={{ id: `${match.id}||CS||20`, matchId: match.id, matchTitle, sport: "tennis", market: "Correct Score", outcome: `${match.player1} 2-0`, odds: markets.cs20 }}
+              selection={{ id: `${match.id}||CS||20`, ...baseSelection, market: "Correct Score", outcome: `${match.player1} 2-0`, odds: markets.cs20 }}
               label="2–0" sublabel={match.player1} />
             <OddsButton size="md"
-              selection={{ id: `${match.id}||CS||21`, matchId: match.id, matchTitle, sport: "tennis", market: "Correct Score", outcome: `${match.player1} 2-1`, odds: markets.cs21 }}
+              selection={{ id: `${match.id}||CS||21`, ...baseSelection, market: "Correct Score", outcome: `${match.player1} 2-1`, odds: markets.cs21 }}
               label="2–1" sublabel={match.player1} />
           </div>
           <p className="text-xs font-semibold mb-2" style={{ color: "var(--secondary)" }}>{match.player2} wins</p>
           <div className="flex gap-2">
             <OddsButton size="md"
-              selection={{ id: `${match.id}||CS||02`, matchId: match.id, matchTitle, sport: "tennis", market: "Correct Score", outcome: `${match.player2} 0-2`, odds: markets.cs02 }}
+              selection={{ id: `${match.id}||CS||02`, ...baseSelection, market: "Correct Score", outcome: `${match.player2} 0-2`, odds: markets.cs02 }}
               label="0–2" sublabel={match.player2} />
             <OddsButton size="md"
-              selection={{ id: `${match.id}||CS||12`, matchId: match.id, matchTitle, sport: "tennis", market: "Correct Score", outcome: `${match.player2} 1-2`, odds: markets.cs12 }}
+              selection={{ id: `${match.id}||CS||12`, ...baseSelection, market: "Correct Score", outcome: `${match.player2} 1-2`, odds: markets.cs12 }}
               label="1–2" sublabel={match.player2} />
           </div>
         </div>
@@ -194,10 +297,10 @@ export default function TennisMatchPage({ params }: { params: { id: string } }) 
       <MarketGroup title="To Win a Set" description="Will the player win at least one set? Stakes returned if player wins match 2-0.">
         <div className="flex gap-2">
           <OddsButton size="lg"
-            selection={{ id: `${match.id}||W1S||p1`, matchId: match.id, matchTitle, sport: "tennis", market: "To Win a Set", outcome: `${match.player1} to win at least 1 set`, odds: markets.p1WinSet }}
+            selection={{ id: `${match.id}||W1S||p1`, ...baseSelection, market: "To Win a Set", outcome: `${match.player1} to win at least 1 set`, odds: markets.p1WinSet }}
             label={match.player1} sublabel="Win ≥1 Set" />
           <OddsButton size="lg"
-            selection={{ id: `${match.id}||W1S||p2`, matchId: match.id, matchTitle, sport: "tennis", market: "To Win a Set", outcome: `${match.player2} to win at least 1 set`, odds: markets.p2WinSet }}
+            selection={{ id: `${match.id}||W1S||p2`, ...baseSelection, market: "To Win a Set", outcome: `${match.player2} to win at least 1 set`, odds: markets.p2WinSet }}
             label={match.player2} sublabel="Win ≥1 Set" />
         </div>
       </MarketGroup>
@@ -206,10 +309,10 @@ export default function TennisMatchPage({ params }: { params: { id: string } }) 
       <MarketGroup title="Total Sets" description="Will the match go to a deciding set?">
         <div className="flex gap-2">
           <OddsButton size="lg"
-            selection={{ id: `${match.id}||TS||under`, matchId: match.id, matchTitle, sport: "tennis", market: "Total Sets", outcome: "Under 2.5 Sets (Straight sets)", odds: markets.under25Sets }}
+            selection={{ id: `${match.id}||TS||under`, ...baseSelection, market: "Total Sets", outcome: "Under 2.5 Sets (Straight sets)", odds: markets.under25Sets }}
             label="Under 2.5" sublabel="Straight sets" />
           <OddsButton size="lg"
-            selection={{ id: `${match.id}||TS||over`, matchId: match.id, matchTitle, sport: "tennis", market: "Total Sets", outcome: "Over 2.5 Sets (3 sets)", odds: markets.over25Sets }}
+            selection={{ id: `${match.id}||TS||over`, ...baseSelection, market: "Total Sets", outcome: "Over 2.5 Sets (3 sets)", odds: markets.over25Sets }}
             label="Over 2.5" sublabel="3 sets" />
         </div>
       </MarketGroup>
@@ -220,3 +323,4 @@ export default function TennisMatchPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+
