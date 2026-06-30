@@ -95,3 +95,15 @@ For future work, every meaningful app update should be recorded in this file and
 - Added CSV export for saved Match Plan selections, including kickoff, market, outcome, model odds, status, and notes.
 - Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
 - Verified TypeScript, production build, `/planner` HTTP response, and in-app browser rendering of the new planner controls.
+
+## 2026-06-30 - Add Insights Workspace
+
+- Added `/insights` as a premium-style analysis workspace for ranked model recommendations.
+- Insights aggregates football and tennis market feeds, computes confidence tiers, risk/context tags, model odds, and recommended outcomes.
+- Added sport filters and confidence-tier filters for Strong, Moderate, and Competitive insights.
+- Added summary metrics for analysed matches, strong insights, moderate insights, and average confidence.
+- Added one-click `Add to plan` actions that reuse the existing Match Plan state and mutual-exclusion protection.
+- Added `Open report` links to the existing match detail analysis pages.
+- Added Insights to the desktop sidebar and mobile bottom navigation.
+- Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
+- Verified TypeScript, production build, `/insights` HTTP response, and in-app browser rendering of the new Insights controls.
