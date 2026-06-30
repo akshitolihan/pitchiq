@@ -6,6 +6,7 @@ import { useWallet } from "@/contexts/WalletContext";
 const navItems = [
   { href: "/",        label: "Home",     icon: HomeIcon },
   { href: "/insights", label: "Insights", icon: InsightsIcon },
+  { href: "/lab",      label: "Lab",      icon: LabIcon },
   { href: "/live",    label: "Live",     icon: LiveIcon,    dot: true },
   { href: "/planner", label: "Planner",  icon: PlannerIcon },
   { href: "/betting", label: "Markets",  icon: OddsIcon },
@@ -136,6 +137,16 @@ function InsightsIcon({ size, active }: { size: number; active: boolean }) {
       <path d="M3 3v18h18" />
       <path d="M7 15l4-4 3 3 5-7" />
       <path d="M17 7h2v2" />
+    </svg>
+  );
+}
+function LabIcon({ size, active }: { size: number; active: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 2v6.5L4.5 19a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 8.5V2" />
+      <path d="M8 2h8" />
+      <path d="M7 15h10" />
     </svg>
   );
 }

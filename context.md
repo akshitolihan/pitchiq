@@ -107,3 +107,16 @@ For future work, every meaningful app update should be recorded in this file and
 - Added Insights to the desktop sidebar and mobile bottom navigation.
 - Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
 - Verified TypeScript, production build, `/insights` HTTP response, and in-app browser rendering of the new Insights controls.
+
+## 2026-07-01 - Add Strategy Lab
+
+- Added `/lab` as a Strategy Lab workspace for turning saved Match Plan items into review scenarios.
+- Added scenario presets: Focused, Balanced, Exploratory, and Custom.
+- Added scenario readiness scoring based on model probability, note coverage, plan status weighting, and review-time budget.
+- Added review workload controls, selected-item counts, average model probability, note coverage, missing-note count, high-variance count, and due-within-24-hours count.
+- Added saved-plan item cards with custom scenario inclusion controls.
+- Added a review checklist that highlights missing notes and high-variance analysis items.
+- Added quick links from Lab to Insights and Planner.
+- Added Lab to the desktop sidebar and mobile bottom navigation.
+- Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
+- Verified TypeScript, production build, `/lab` HTTP response, and in-app browser rendering of the new Lab controls.
