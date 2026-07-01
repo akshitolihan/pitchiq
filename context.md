@@ -161,3 +161,9 @@ For future work, every meaningful app update should be recorded in this file and
 - Added Account to the desktop sidebar and surfaced the current access mode in the sidebar footer.
 - Added the first paid feature gate to `/insights`: Free Preview shows the top 3 filtered insights, while Pro Analysis unlocks the full ranked board.
 - Kept the language focused on analysis, planning, confidence, and review workflows rather than positioning the app as a betting product.
+
+## 2026-07-01 - Connect Existing Vercel Project
+
+- Found the existing Vercel project `pitchiq` at `https://pitchiq-eta.vercel.app`.
+- Connected the Vercel project to the GitHub repository `akshitolihan/pitchiq`.
+- Production deployment should now be triggered by future pushes to the `main` branch.
