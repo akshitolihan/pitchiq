@@ -175,3 +175,12 @@ For future work, every meaningful app update should be recorded in this file and
 - Added Free Preview export limits: free users can export the first 3 planned items, while Pro Analysis unlocks complete exports.
 - Added Export Center links from Planner and the desktop sidebar.
 - Kept export language focused on analysis reports, planning notes, and review workflows.
+
+## 2026-07-01 - Add Daily Edge Brief
+
+- Added `/daily` as a Daily Edge Brief section for daily or next-available analysis suggestions.
+- Added user requirement controls for simulated target, unit size, and risk profile: Steady, Balanced, and Ambitious.
+- Daily ideas are ranked from football and tennis market feeds using model confidence, separation, odds, and slate timing.
+- Each daily idea includes market, model view, confidence, risk level, uniqueness note, rationale bullets, deep-analysis link, and add-to-plan action.
+- Free Preview shows up to 2 ideas while Pro Analysis unlocks the full daily shortlist for the selected requirement profile.
+- Added Daily to desktop sidebar and mobile bottom navigation.
