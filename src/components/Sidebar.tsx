@@ -12,6 +12,7 @@ const navItems = [
   { href: "/planner", label: "Planner",  icon: PlannerIcon },
   { href: "/alerts",  label: "Alerts",   icon: AlertsIcon },
   { href: "/history", label: "History",  icon: HistoryIcon },
+  { href: "/exports", label: "Exports",  icon: ExportIcon },
   { href: "/betting", label: "Markets",  icon: OddsIcon },
   { href: "/matches", label: "Matches",  icon: MatchesIcon },
   { href: "/fifa",    label: "FIFA WC",  icon: TrophyIcon },
@@ -187,6 +188,18 @@ function HistoryIcon({ size, active }: { size: number; active: boolean }) {
       <path d="M3 12a9 9 0 1 0 3-6.7" />
       <path d="M3 3v6h6" />
       <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+function ExportIcon({ size, active }: { size: number; active: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M8 13h8" />
+      <path d="M8 17h5" />
+      <path d="M10 9H8" />
     </svg>
   );
 }

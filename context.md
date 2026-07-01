@@ -167,3 +167,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Found the existing Vercel project `pitchiq` at `https://pitchiq-eta.vercel.app`.
 - Connected the Vercel project to the GitHub repository `akshitolihan/pitchiq`.
 - Production deployment should now be triggered by future pushes to the `main` branch.
+
+## 2026-07-01 - Add Pro Export Center
+
+- Added `/exports` as a Pro-oriented report export workspace for active plans and the latest saved analysis session.
+- Added Markdown and CSV export formats with match context, status, model odds, risk context, and review notes.
+- Added Free Preview export limits: free users can export the first 3 planned items, while Pro Analysis unlocks complete exports.
+- Added Export Center links from Planner and the desktop sidebar.
+- Kept export language focused on analysis reports, planning notes, and review workflows.

@@ -244,6 +244,13 @@ export default function PlannerPage() {
           >
             Export
           </button>
+          <Link
+            href="/exports"
+            className="px-4 py-2 rounded-xl text-sm font-black"
+            style={{ background: "var(--green)", color: "#000" }}
+          >
+            Export Center
+          </Link>
         </div>
       </div>
 
