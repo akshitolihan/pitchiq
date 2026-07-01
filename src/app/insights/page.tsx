@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { BetSelection, useBetSlip } from "@/contexts/BetSlipContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { computeFootballMarkets, getFootballPrediction, getTennisPrediction } from "@/lib/odds-utils";
 
 interface FootballMatch {
@@ -187,6 +188,7 @@ export default function InsightsPage() {
   const [sportFilter, setSportFilter] = useState<SportFilter>("all");
   const [tierFilter, setTierFilter] = useState<TierFilter>("all");
   const { toggleSelection, isSelected, state } = useBetSlip();
+  const { isPro } = useSubscription();
 
   useEffect(() => {
     let mounted = true;
@@ -221,6 +223,8 @@ export default function InsightsPage() {
     const tierMatch = tierFilter === "all" || item.tier === tierFilter;
     return sportMatch && tierMatch;
   });
+  const visibleInsights = isPro ? filtered : filtered.slice(0, 3);
+  const hiddenInsightCount = Math.max(0, filtered.length - visibleInsights.length);
 
   const strongCount = insights.filter(item => item.tier === "Strong").length;
   const moderateCount = insights.filter(item => item.tier === "Moderate").length;
@@ -287,6 +291,32 @@ export default function InsightsPage() {
         </div>
       </div>
 
+      <div
+        className="rounded-xl border p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+        style={{
+          background: isPro ? "rgba(22,199,132,0.08)" : "rgba(245,166,35,0.08)",
+          borderColor: isPro ? "rgba(22,199,132,0.35)" : "rgba(245,166,35,0.35)",
+        }}
+      >
+        <div>
+          <p className="text-xs font-black uppercase tracking-wider" style={{ color: isPro ? "var(--green)" : "var(--warning)" }}>
+            {isPro ? "Pro unlocked" : "Free preview"}
+          </p>
+          <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
+            {isPro
+              ? "All ranked insights, filters, reports, and planning actions are available in this MVP workspace."
+              : "Free mode shows the top 3 filtered insights. Pro unlocks the full ranked board for deeper analysis planning."}
+          </p>
+        </div>
+        <Link
+          href="/account"
+          className="shrink-0 text-center rounded-xl px-4 py-2.5 text-sm font-black"
+          style={{ background: isPro ? "var(--surface)" : "var(--green)", color: isPro ? "var(--green)" : "#000" }}
+        >
+          {isPro ? "Manage plan" : "Unlock Pro"}
+        </Link>
+      </div>
+
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {(["all", "football", "tennis"] as SportFilter[]).map(value => (
@@ -335,7 +365,7 @@ export default function InsightsPage() {
         </div>
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
-          {filtered.map(item => {
+          {visibleInsights.map(item => {
             const selected = isSelected(item.selection.id);
             return (
               <article
@@ -418,6 +448,29 @@ export default function InsightsPage() {
               </article>
             );
           })}
+          {hiddenInsightCount > 0 && (
+            <div
+              className="rounded-xl border p-6 flex flex-col justify-center"
+              style={{ background: "var(--surface)", borderColor: "rgba(245,166,35,0.35)" }}
+            >
+              <p className="text-xs font-black uppercase tracking-wider" style={{ color: "var(--warning)" }}>
+                {hiddenInsightCount} insights locked
+              </p>
+              <h2 className="text-xl font-black mt-2" style={{ fontFamily: "var(--font-heading)" }}>
+                Upgrade this workspace for full analysis depth
+              </h2>
+              <p className="text-sm mt-2" style={{ color: "var(--secondary)" }}>
+                Pro mode unlocks every filtered recommendation so users can compare edge, confidence, and planning context across the full board.
+              </p>
+              <Link
+                href="/account"
+                className="mt-5 text-center rounded-xl px-4 py-2.5 text-sm font-black"
+                style={{ background: "var(--green)", color: "#000" }}
+              >
+                View Pro access
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

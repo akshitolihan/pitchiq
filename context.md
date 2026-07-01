@@ -152,3 +152,12 @@ For future work, every meaningful app update should be recorded in this file and
 - Updated detail-page market selections to carry kickoff time and competition/tournament metadata into Planner, Alerts, Lab, and History.
 - Rebuilt and restarted the Next.js frontend on `http://127.0.0.1:3000`.
 - Verified TypeScript, production build, football report HTTP response, and in-app browser rendering of the enhanced report controls.
+
+## 2026-07-01 - Add Premium Access Mode
+
+- Added local subscription state under `pitchiq_subscription` with Free Preview and Pro Analysis modes.
+- Wrapped the app in a subscription provider so paid feature gates can be reused across pages.
+- Added `/account` as an MVP access and billing page with plan cards, local plan switching, and commercial positioning notes.
+- Added Account to the desktop sidebar and surfaced the current access mode in the sidebar footer.
+- Added the first paid feature gate to `/insights`: Free Preview shows the top 3 filtered insights, while Pro Analysis unlocks the full ranked board.
+- Kept the language focused on analysis, planning, confidence, and review workflows rather than positioning the app as a betting product.

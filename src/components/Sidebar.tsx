@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useWallet } from "@/contexts/WalletContext";
 
 const navItems = [
@@ -15,11 +16,13 @@ const navItems = [
   { href: "/matches", label: "Matches",  icon: MatchesIcon },
   { href: "/fifa",    label: "FIFA WC",  icon: TrophyIcon },
   { href: "/wallet",  label: "Sim",      icon: WalletIcon },
+  { href: "/account", label: "Account",  icon: AccountIcon },
 ];
 
 export default function Sidebar() {
   const path = usePathname();
   const { state } = useWallet();
+  const { state: subscription } = useSubscription();
   const pendingBets = state.bets.filter(b => b.status === "pending").length;
 
   return (
@@ -105,7 +108,9 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold truncate" style={{ fontFamily: "var(--font-heading)" }}>You</p>
-            <p className="text-xs truncate" style={{ color: "var(--secondary)", fontFamily: "var(--font-body)" }}>Personal Mode</p>
+            <p className="text-xs truncate" style={{ color: "var(--secondary)", fontFamily: "var(--font-body)" }}>
+              {subscription.plan === "pro" ? "Pro Analysis" : "Free Preview"}
+            </p>
           </div>
         </div>
       </div>
@@ -224,6 +229,16 @@ function WalletIcon({ size, active }: { size: number; active: boolean }) {
       <path d="M20 12V8H6a2 2 0 0 1 0-4h14v4" />
       <path d="M4 6v12a2 2 0 0 0 2 2h14v-4" />
       <circle cx="17" cy="12" r="1" fill={active ? "currentColor" : "none"} />
+    </svg>
+  );
+}
+function AccountIcon({ size, active }: { size: number; active: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
+      <path d="M17.5 3.5l1 2 2 .3-1.5 1.4.4 2-1.9-1-1.8 1 .4-2-1.5-1.4 2-.3 1-2z" />
     </svg>
   );
 }
