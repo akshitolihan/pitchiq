@@ -209,3 +209,12 @@ For future work, every meaningful app update should be recorded in this file and
 - Added cloud save support for saved analysis sessions from Planner using the Supabase `analysis_sessions` table.
 - Updated History to merge cloud sessions with local sessions for signed-in users and delete sessions from Supabase when possible.
 - Verified the Next.js production build after the Supabase sync changes.
+
+## 2026-07-02 - Verify Supabase Signed-In Sync Flow
+
+- Disabled required Supabase email confirmation for the MVP so new users can sign in immediately after account creation.
+- Created temporary Supabase Auth smoke-test users from the dashboard and verified the Pitch IQ account page showed `Synced account`.
+- Seeded temporary Planner and History records through a signed-in Supabase session and verified live `/planner` loaded `Cloud planner sync` with the cloud item.
+- Verified live `/history` loaded `Cloud history synced` with the cloud session.
+- Edited a Planner note in the live UI and confirmed the change saved back to the Supabase `planner_items` table.
+- Removed the temporary Planner/History smoke records and deleted the temporary Supabase Auth users after verification.
