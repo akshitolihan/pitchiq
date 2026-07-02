@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BetSelection, useBetSlip } from "@/contexts/BetSlipContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { buildJournalCsv, buildJournalMarkdown, downloadTextFile } from "@/lib/journal-exports";
 import {
   MatchJournal,
   blankJournal,
@@ -16,6 +18,8 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type JournalField = "modelView" | "teamNews" | "riskFlags" | "finalReview";
+type ExportScope = "current" | "all";
+type ExportFormat = "markdown" | "csv";
 
 const FIELD_LABELS: Array<{ key: JournalField; label: string; placeholder: string }> = [
   {
@@ -67,10 +71,14 @@ function kickoffLabel(selection: BetSelection) {
 
 export default function JournalPage() {
   const { user, loading: authLoading } = useAuth();
+  const { isPro } = useSubscription();
   const { state } = useBetSlip();
   const [journals, setJournals] = useState<Record<string, MatchJournal>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [syncMessage, setSyncMessage] = useState("Local journal");
+  const [exportScope, setExportScope] = useState<ExportScope>("current");
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("markdown");
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   const selectedSelection = useMemo(() => {
     return state.selections.find(selection => selection.id === selectedId) ?? state.selections[0] ?? null;
@@ -141,8 +149,30 @@ export default function JournalPage() {
     }
   }
 
+  function exportJournalReport() {
+    if (!selectedSelection) return;
+    const source = exportScope === "current" ? [selectedSelection] : state.selections;
+    const stamp = new Date().toISOString().slice(0, 10);
+    if (exportFormat === "markdown") {
+      downloadTextFile(
+        `pitchiq-journal-${stamp}.md`,
+        buildJournalMarkdown(source, journals, isPro),
+        "text/markdown;charset=utf-8",
+      );
+    } else {
+      downloadTextFile(
+        `pitchiq-journal-${stamp}.csv`,
+        buildJournalCsv(source, journals, isPro),
+        "text/csv;charset=utf-8",
+      );
+    }
+    setExportMessage(isPro ? "Full journal report exported" : "Free journal preview exported");
+    setTimeout(() => setExportMessage(null), 2500);
+  }
+
   const completedFields = journalCompleteness(selectedJournal ?? undefined);
   const totalJournals = Object.values(journals).filter(journal => journalCompleteness(journal) > 0).length;
+  const exportIncluded = isPro ? (exportScope === "current" ? Math.min(1, state.selections.length) : state.selections.length) : 1;
 
   return (
     <div className="min-h-[100dvh] px-4 py-4 md:px-6 md:py-6 space-y-5">
@@ -187,6 +217,65 @@ export default function JournalPage() {
         <span className="text-xs font-black px-3 py-1 rounded-lg border" style={{ borderColor: "var(--border)", color: user ? "var(--green)" : "var(--secondary)" }}>
           {formatUpdated(selectedJournal?.updatedAt)}
         </span>
+      </section>
+
+      <section className="rounded-xl border p-4 md:p-5 space-y-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider" style={{ color: isPro ? "var(--green)" : "var(--warning)" }}>
+              {isPro ? "Full journal exports" : "Free journal preview"}
+            </p>
+            <h2 className="text-lg font-black mt-1" style={{ fontFamily: "var(--font-heading)" }}>Journal report</h2>
+            <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
+              {isPro
+                ? "Export complete research notes for the selected match or the full active plan."
+                : "Free Preview exports one journal with locked Pro fields."}
+            </p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-[auto_auto_auto]">
+            <select
+              value={exportScope}
+              onChange={event => setExportScope(event.target.value as ExportScope)}
+              className="rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
+              style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+            >
+              <option value="current">Current journal</option>
+              <option value="all">All planned journals</option>
+            </select>
+            <select
+              value={exportFormat}
+              onChange={event => setExportFormat(event.target.value as ExportFormat)}
+              className="rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
+              style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+            >
+              <option value="markdown">Markdown</option>
+              <option value="csv">CSV</option>
+            </select>
+            <button
+              onClick={exportJournalReport}
+              disabled={state.selections.length === 0}
+              className="rounded-xl px-4 py-2.5 text-sm font-black"
+              style={{
+                background: state.selections.length > 0 ? "var(--green)" : "var(--bg)",
+                color: state.selections.length > 0 ? "#000" : "rgba(255,255,255,0.24)",
+                cursor: state.selections.length > 0 ? "pointer" : "not-allowed",
+              }}
+            >
+              Export
+            </button>
+          </div>
+        </div>
+        <div className="rounded-xl p-3 flex flex-col gap-1 md:flex-row md:items-center md:justify-between" style={{ background: "var(--bg)" }}>
+          <p className="text-sm" style={{ color: "var(--secondary)" }}>
+            Included: {state.selections.length === 0 ? 0 : exportIncluded}/{exportScope === "current" ? Math.min(1, state.selections.length) : state.selections.length} journal{exportIncluded === 1 ? "" : "s"}
+          </p>
+          {!isPro && state.selections.length > 0 && (
+            <Link href="/account" className="text-sm font-black" style={{ color: "var(--green)" }}>
+              Unlock full journal reports
+            </Link>
+          )}
+        </div>
+        {exportMessage && <p className="text-xs font-bold" style={{ color: "var(--green)" }}>{exportMessage}</p>}
       </section>
 
       {state.selections.length === 0 ? (

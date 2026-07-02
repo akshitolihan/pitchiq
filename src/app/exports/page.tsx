@@ -306,6 +306,23 @@ export default function ExportsPage() {
         {message && <p className="text-xs font-bold" style={{ color: "var(--green)" }}>{message}</p>}
       </section>
 
+      <section className="rounded-xl border p-4 md:p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider" style={{ color: isPro ? "var(--green)" : "var(--warning)" }}>
+              Journal reports
+            </p>
+            <h2 className="text-lg font-black mt-1" style={{ fontFamily: "var(--font-heading)" }}>Research note exports</h2>
+            <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
+              Export structured journal notes with confidence, model view, context, risk flags, and final review.
+            </p>
+          </div>
+          <Link href="/journal" className="rounded-xl px-4 py-2.5 text-sm font-black text-center" style={{ background: "var(--green)", color: "#000" }}>
+            Open Journal Reports
+          </Link>
+        </div>
+      </section>
+
       {source.selections.length === 0 ? (
         <div className="rounded-xl border px-5 py-12 text-center" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
           <p className="text-lg font-black">No analysis items to export</p>

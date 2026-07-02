@@ -242,3 +242,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Added local journal storage for signed-out users and Supabase sync for signed-in users using `alert_rules` records with `rule_type = 'journal'`.
 - Added Journal to the desktop sidebar, Account quick links, and each Planner item card.
 - Verified the Next.js production build after the Journal changes.
+
+## 2026-07-02 - Add Journal Report Exports
+
+- Added reusable journal export builders for Markdown and CSV reports.
+- Added Journal report controls to `/journal` with current-match and all-planned-journals scopes.
+- Added Free Preview limits for journal exports and Pro Analysis full-detail exports.
+- Added a Journal Reports section to `/exports` that links users into the research-note export workflow.
+- Verified the Next.js production build after the journal export changes.
