@@ -184,3 +184,13 @@ For future work, every meaningful app update should be recorded in this file and
 - Each daily idea includes market, model view, confidence, risk level, uniqueness note, rationale bullets, deep-analysis link, and add-to-plan action.
 - Free Preview shows up to 2 ideas while Pro Analysis unlocks the full daily shortlist for the selected requirement profile.
 - Added Daily to desktop sidebar and mobile bottom navigation.
+
+## 2026-07-02 - Start Supabase Auth And Database Foundation
+
+- Added `@supabase/supabase-js` as the client auth/database dependency.
+- Added a guarded Supabase browser client that keeps the app in local MVP mode when Supabase env vars are blank.
+- Added an Auth provider with sign in, sign up, sign out, profile loading, and subscription-plan sync helpers.
+- Wrapped the app in the Auth provider and connected Subscription state to the Supabase profile plan when a user is signed in.
+- Updated `/account` with an Account Identity panel for Supabase sign-in/sign-up and plan sync.
+- Added `supabase/schema.sql` with profiles, planner items, analysis sessions, alert rules, RLS policies, and new-user profile creation trigger.
+- Added Supabase env placeholders to `.env.example` and `.env.local.example`.

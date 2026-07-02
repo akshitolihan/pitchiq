@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { SubscriptionPlan, useSubscription } from "@/contexts/SubscriptionContext";
 
 const planFeatures = {
@@ -19,6 +21,28 @@ const planFeatures = {
 
 export default function AccountPage() {
   const { state, isPro, setPlan } = useSubscription();
+  const { configured, loading, user, profile, signIn, signUp, signOut, updateSubscriptionPlan } = useAuth();
+  const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+
+  async function submitAuth(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAuthMessage(null);
+    const error = authMode === "sign-in"
+      ? await signIn(email.trim(), password)
+      : await signUp(email.trim(), password);
+    setAuthMessage(error ?? (authMode === "sign-in" ? "Signed in" : "Account created. Check email confirmation if enabled."));
+  }
+
+  async function selectPlan(plan: SubscriptionPlan) {
+    setPlan(plan);
+    if (user) {
+      const error = await updateSubscriptionPlan(plan);
+      setAuthMessage(error ? `Plan saved locally. Supabase sync failed: ${error}` : "Plan synced to account");
+    }
+  }
 
   return (
     <div className="min-h-[100dvh] px-4 py-4 md:px-6 md:py-6 space-y-5">
@@ -31,7 +55,7 @@ export default function AccountPage() {
             Account
           </h1>
           <p className="text-sm mt-1 max-w-2xl" style={{ color: "var(--secondary)" }}>
-            Manage the analysis access mode for this MVP. Payments are not connected yet; this local toggle lets us design and test paid feature gates.
+            Manage access mode, account identity, and the first database-backed subscription state for the MVP.
           </p>
         </div>
         <div className="rounded-xl border px-4 py-3" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
@@ -39,8 +63,83 @@ export default function AccountPage() {
           <p className="text-xl font-black mt-1" style={{ color: isPro ? "var(--green)" : "var(--warning)" }}>
             {isPro ? "Pro Analysis" : "Free Preview"}
           </p>
+          <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>
+            {user ? "Synced account" : "Local mode"}
+          </p>
         </div>
       </div>
+
+      <section className="rounded-xl border p-4 md:p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-lg font-black" style={{ fontFamily: "var(--font-heading)" }}>Account identity</h2>
+            <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
+              {configured
+                ? user
+                  ? `Signed in as ${profile?.email ?? user.email ?? "Pitch IQ user"}. Subscription state can now sync to Supabase.`
+                  : "Sign in or create an account to sync plans and subscription state beyond this browser."
+                : "Supabase keys are not configured yet. The app is still running in local MVP mode."}
+            </p>
+          </div>
+          {configured && user ? (
+            <button
+              onClick={signOut}
+              className="rounded-xl px-4 py-2.5 text-sm font-bold border"
+              style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--secondary)" }}
+            >
+              Sign out
+            </button>
+          ) : configured ? (
+            <form onSubmit={submitAuth} className="grid gap-2 md:grid-cols-[150px_180px_180px_auto]">
+              <select
+                value={authMode}
+                onChange={event => setAuthMode(event.target.value as "sign-in" | "sign-up")}
+                className="rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
+                style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+              >
+                <option value="sign-in">Sign in</option>
+                <option value="sign-up">Sign up</option>
+              </select>
+              <input
+                value={email}
+                onChange={event => setEmail(event.target.value)}
+                type="email"
+                placeholder="Email"
+                className="rounded-xl px-3 py-2.5 text-sm outline-none"
+                style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+              />
+              <input
+                value={password}
+                onChange={event => setPassword(event.target.value)}
+                type="password"
+                placeholder="Password"
+                className="rounded-xl px-3 py-2.5 text-sm outline-none"
+                style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+              />
+              <button
+                disabled={loading}
+                className="rounded-xl px-4 py-2.5 text-sm font-black"
+                style={{ background: "var(--green)", color: "#000" }}
+              >
+                Continue
+              </button>
+            </form>
+          ) : (
+            <Link
+              href="/exports"
+              className="rounded-xl px-4 py-2.5 text-sm font-black"
+              style={{ background: "var(--green)", color: "#000" }}
+            >
+              Keep local mode
+            </Link>
+          )}
+        </div>
+        {authMessage && (
+          <p className="text-xs font-bold mt-3" style={{ color: authMessage.includes("failed") ? "#EF4444" : "var(--green)" }}>
+            {authMessage}
+          </p>
+        )}
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <PlanCard
@@ -50,7 +149,7 @@ export default function AccountPage() {
           description="A usable analysis preview for new users who want to understand Pitch IQ before upgrading."
           active={state.plan === "free"}
           features={planFeatures.free}
-          onSelect={() => setPlan("free")}
+          onSelect={() => selectPlan("free")}
         />
         <PlanCard
           plan="pro"
@@ -59,7 +158,7 @@ export default function AccountPage() {
           description="Paid workspace positioning for users who need the full board, deeper planning, and repeatable analysis workflows."
           active={state.plan === "pro"}
           features={planFeatures.pro}
-          onSelect={() => setPlan("pro")}
+          onSelect={() => selectPlan("pro")}
         />
       </div>
 
@@ -68,7 +167,7 @@ export default function AccountPage() {
           <div>
             <h2 className="text-lg font-black" style={{ fontFamily: "var(--font-heading)" }}>Feature gates in this MVP</h2>
             <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
-              Insights now demonstrates the first paid gate. The next gates can be added to exports, advanced reports, saved history limits, and alert rules.
+              Insights, Daily, and Exports now demonstrate paid gates. Supabase is ready to store the real subscription tier once project keys are configured.
             </p>
           </div>
           <div className="flex gap-2">
@@ -88,7 +187,7 @@ export default function AccountPage() {
           {[
             ["Analysis only", "Language stays focused on research, planning, model confidence, and risk review."],
             ["Planning value", "Users pay for saved workflows, future match preparation, alerts, and review discipline."],
-            ["Scalable gates", "The same access context can later connect to Stripe, Supabase auth, or a backend entitlement API."],
+            ["Scalable gates", "The access context can now read and update Supabase profile subscription state."],
           ].map(([title, copy]) => (
             <div key={title} className="rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
               <p className="font-black">{title}</p>

@@ -5,6 +5,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import BottomNav from "@/components/BottomNav";
 import BetSlip, { BetSlipFAB } from "@/components/BetSlip";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { BetSlipProvider } from "@/contexts/BetSlipContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { WalletProvider } from "@/contexts/WalletContext";
@@ -34,17 +35,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${GeistSans.variable} ${inter.variable}`}>
       <body className="min-h-screen">
         <WalletProvider>
-          <SubscriptionProvider>
-            <BetSlipProvider>
-              <div className="flex min-h-screen">
-                <Sidebar />
-                <MainWrapper>{children}</MainWrapper>
-              </div>
-              <BottomNav />
-              <BetSlipFAB />
-              <BetSlip />
-            </BetSlipProvider>
-          </SubscriptionProvider>
+          <AuthProvider>
+            <SubscriptionProvider>
+              <BetSlipProvider>
+                <div className="flex min-h-screen">
+                  <Sidebar />
+                  <MainWrapper>{children}</MainWrapper>
+                </div>
+                <BottomNav />
+                <BetSlipFAB />
+                <BetSlip />
+              </BetSlipProvider>
+            </SubscriptionProvider>
+          </AuthProvider>
         </WalletProvider>
       </body>
     </html>

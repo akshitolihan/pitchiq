@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type SubscriptionPlan = "free" | "pro";
 
@@ -47,6 +48,7 @@ function normaliseState(value: unknown): SubscriptionState {
 
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, DEFAULT_STATE);
+  const { profile } = useAuth();
 
   useEffect(() => {
     try {
@@ -61,6 +63,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
+
+  useEffect(() => {
+    if (!profile) return;
+    dispatch({
+      type: "LOAD",
+      state: {
+        plan: profile.subscriptionPlan,
+        updatedAt: profile.updatedAt,
+      },
+    });
+  }, [profile]);
 
   const setPlan = useCallback((plan: SubscriptionPlan) => {
     dispatch({ type: "SET_PLAN", plan });

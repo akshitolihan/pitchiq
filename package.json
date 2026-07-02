@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "@supabase/supabase-js": "^2.45.4",
     "geist": "^1.7.2",
     "next": "14.2.3",
     "react": "^18",
