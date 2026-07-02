@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BetSelection, PlanStatus, useBetSlip } from "@/contexts/BetSlipContext";
-import { AnalysisSession, makeSessionName, readAnalysisSessions, writeAnalysisSessions } from "@/lib/analysis-sessions";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  AnalysisSession,
+  makeSessionId,
+  makeSessionName,
+  readAnalysisSessions,
+  saveCloudAnalysisSession,
+  writeAnalysisSessions,
+} from "@/lib/analysis-sessions";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const STATUS_OPTIONS: Array<{ value: PlanStatus; label: string; tone: string; bg: string }> = [
   { value: "watching", label: "Watching", tone: "var(--cyan, #06b6d4)", bg: "rgba(6,182,212,0.12)" },
@@ -90,7 +99,11 @@ export default function PlannerPage() {
     getSelectionMeta,
     setSelectionStatus,
     setSelectionNote,
+    cloudSyncEnabled,
+    cloudSyncStatus,
+    cloudSyncError,
   } = useBetSlip();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("kickoff");
@@ -179,11 +192,11 @@ export default function PlannerPage() {
     URL.revokeObjectURL(url);
   }
 
-  function saveSession() {
+  async function saveSession() {
     if (state.selections.length === 0) return;
     const nowIso = new Date().toISOString();
     const session: AnalysisSession = {
-      id: `session-${Date.now()}`,
+      id: makeSessionId(),
       name: sessionName.trim() || makeSessionName(),
       tag: sessionTag,
       createdAt: nowIso,
@@ -192,7 +205,17 @@ export default function PlannerPage() {
       selectionMeta: state.selectionMeta,
     };
     writeAnalysisSessions([session, ...readAnalysisSessions()].slice(0, 50));
-    setSessionMessage("Session saved to history");
+    const supabase = getSupabaseBrowserClient();
+    if (supabase && user) {
+      try {
+        await saveCloudAnalysisSession(supabase, user.id, session);
+        setSessionMessage("Session saved to history and cloud");
+      } catch (error) {
+        setSessionMessage(error instanceof Error ? `Saved locally. Cloud sync failed: ${error.message}` : "Saved locally. Cloud sync failed.");
+      }
+    } else {
+      setSessionMessage("Session saved to history");
+    }
     setTimeout(() => setSessionMessage(null), 2500);
   }
 
@@ -286,6 +309,28 @@ export default function PlannerPage() {
           <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>{dueSoon} planned item{dueSoon === 1 ? "" : "s"} within 24 hours.</p>
         </button>
       </div>
+
+      <section className="rounded-xl border px-4 py-3 flex flex-col gap-1 md:flex-row md:items-center md:justify-between" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div>
+          <p className="text-xs font-black uppercase" style={{ color: cloudSyncEnabled ? "var(--green)" : "var(--secondary)" }}>
+            {cloudSyncEnabled ? "Cloud planner sync" : "Local planner mode"}
+          </p>
+          <p className="text-sm" style={{ color: "var(--secondary)" }}>
+            {cloudSyncEnabled
+              ? cloudSyncStatus === "loading"
+                ? "Loading saved planner items from your account..."
+                : cloudSyncStatus === "saving"
+                  ? "Saving planner changes to your account..."
+                  : cloudSyncStatus === "error"
+                    ? cloudSyncError ?? "Planner cloud sync needs attention."
+                    : "Planner changes are saved to this browser and your account."
+              : "Sign in on Account to sync planner items across browsers."}
+          </p>
+        </div>
+        <span className="text-xs font-black px-3 py-1 rounded-lg border" style={{ borderColor: "var(--border)", color: cloudSyncStatus === "error" ? "#EF4444" : cloudSyncEnabled ? "var(--green)" : "var(--secondary)" }}>
+          {cloudSyncEnabled ? cloudSyncStatus : "local"}
+        </span>
+      </section>
 
       <section className="rounded-xl border p-4 space-y-3" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end">

@@ -1,6 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { loadCloudPlan, saveCloudPlan } from "@/lib/planner-cloud";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export interface BetSelection {
   id: string;           // unique: `${matchId}||${market}||${outcome}`
@@ -175,6 +178,9 @@ function reducer(state: BetSlipState, action: Action): BetSlipState {
 
 interface BetSlipCtx {
   state: BetSlipState;
+  cloudSyncEnabled: boolean;
+  cloudSyncStatus: "local" | "loading" | "synced" | "saving" | "error";
+  cloudSyncError: string | null;
   toggleSelection: (sel: BetSelection) => void;
   removeSelection: (id: string) => void;
   clearSlip: () => void;
@@ -191,6 +197,13 @@ const BetSlipContext = createContext<BetSlipCtx | null>(null);
 
 export function BetSlipProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, { selections: [], selectionMeta: {}, stake: 10, open: false });
+  const { user, loading: authLoading } = useAuth();
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<BetSlipCtx["cloudSyncStatus"]>("local");
+  const [cloudSyncError, setCloudSyncError] = useState<string | null>(null);
+  const localLoadedRef = useRef(false);
+  const remoteLoadedRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
+  const supabase = getSupabaseBrowserClient();
 
   // Persist to localStorage
   useEffect(() => {
@@ -201,6 +214,7 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: "LOAD", selections: selections ?? [], selectionMeta, stake: stake ?? 10 });
       }
     } catch { /* ignore */ }
+    localLoadedRef.current = true;
   }, []);
 
   useEffect(() => {
@@ -212,6 +226,71 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
       }));
     } catch { /* ignore */ }
   }, [state.selections, state.selectionMeta, state.stake]);
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (!supabase || !user) {
+      userIdRef.current = null;
+      remoteLoadedRef.current = true;
+      setCloudSyncStatus("local");
+      setCloudSyncError(null);
+      return;
+    }
+
+    if (userIdRef.current === user.id && remoteLoadedRef.current) return;
+
+    let cancelled = false;
+    userIdRef.current = user.id;
+    remoteLoadedRef.current = false;
+    setCloudSyncStatus("loading");
+    setCloudSyncError(null);
+
+    loadCloudPlan(supabase)
+      .then(remotePlan => {
+        if (cancelled) return;
+        const localSelections = state.selections;
+        const localMeta = state.selectionMeta;
+        const mergedSelections = [
+          ...remotePlan.selections,
+          ...localSelections.filter(selection => !remotePlan.selections.some(remote => remote.id === selection.id)),
+        ];
+        const mergedMeta = {
+          ...localMeta,
+          ...remotePlan.selectionMeta,
+        };
+        dispatch({ type: "LOAD", selections: mergedSelections, selectionMeta: mergedMeta, stake: state.stake });
+        remoteLoadedRef.current = true;
+        setCloudSyncStatus("synced");
+      })
+      .catch(error => {
+        if (cancelled) return;
+        remoteLoadedRef.current = true;
+        setCloudSyncStatus("error");
+        setCloudSyncError(error instanceof Error ? error.message : "Could not load cloud plan.");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, state.selectionMeta, state.selections, state.stake, supabase, user]);
+
+  useEffect(() => {
+    if (!supabase || !user || !localLoadedRef.current || !remoteLoadedRef.current) return;
+
+    const timeout = window.setTimeout(() => {
+      setCloudSyncStatus("saving");
+      setCloudSyncError(null);
+      saveCloudPlan(supabase, user.id, state.selections, state.selectionMeta)
+        .then(() => setCloudSyncStatus("synced"))
+        .catch(error => {
+          setCloudSyncStatus("error");
+          setCloudSyncError(error instanceof Error ? error.message : "Could not save cloud plan.");
+        });
+    }, 650);
+
+    return () => window.clearTimeout(timeout);
+  }, [state.selections, state.selectionMeta, supabase, user]);
 
   const toggleSelection = useCallback((sel: BetSelection) => dispatch({ type: "TOGGLE_SELECTION", payload: sel }), []);
   const removeSelection = useCallback((id: string) => dispatch({ type: "REMOVE", id }), []);
@@ -229,6 +308,9 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
   return (
     <BetSlipContext.Provider value={{
       state,
+      cloudSyncEnabled: Boolean(supabase && user),
+      cloudSyncStatus,
+      cloudSyncError,
       toggleSelection,
       removeSelection,
       clearSlip,

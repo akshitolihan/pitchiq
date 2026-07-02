@@ -3,8 +3,16 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnalysisSession, readAnalysisSessions, writeAnalysisSessions } from "@/lib/analysis-sessions";
+import {
+  AnalysisSession,
+  deleteCloudAnalysisSession,
+  readAnalysisSessions,
+  readCloudAnalysisSessions,
+  writeAnalysisSessions,
+} from "@/lib/analysis-sessions";
+import { useAuth } from "@/contexts/AuthContext";
 import { useBetSlip } from "@/contexts/BetSlipContext";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -30,14 +38,46 @@ function sessionStats(session: AnalysisSession) {
 
 export default function HistoryPage() {
   const [sessions, setSessions] = useState<AnalysisSession[]>([]);
+  const [syncMessage, setSyncMessage] = useState("Local history");
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("all");
+  const { user, loading: authLoading } = useAuth();
   const { replacePlan } = useBetSlip();
   const router = useRouter();
 
   useEffect(() => {
-    setSessions(readAnalysisSessions());
-  }, []);
+    const localSessions = readAnalysisSessions();
+    setSessions(localSessions);
+
+    const supabase = getSupabaseBrowserClient();
+    if (authLoading) return;
+    if (!supabase || !user) {
+      setSyncMessage("Local history");
+      return;
+    }
+
+    let cancelled = false;
+    setSyncMessage("Loading cloud history...");
+    readCloudAnalysisSessions(supabase)
+      .then(cloudSessions => {
+        if (cancelled) return;
+        const merged = [
+          ...cloudSessions,
+          ...localSessions.filter(local => !cloudSessions.some(cloud => cloud.id === local.id)),
+        ].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 50);
+        writeAnalysisSessions(merged);
+        setSessions(merged);
+        setSyncMessage("Cloud history synced");
+      })
+      .catch(error => {
+        if (cancelled) return;
+        setSyncMessage(error instanceof Error ? `Cloud history unavailable: ${error.message}` : "Cloud history unavailable");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user]);
 
   const tags = useMemo(() => {
     return ["all", ...Array.from(new Set(sessions.map(session => session.tag)))];
@@ -66,10 +106,18 @@ export default function HistoryPage() {
     router.push("/planner");
   }
 
-  function deleteSession(id: string) {
+  async function deleteSession(id: string) {
     const next = sessions.filter(session => session.id !== id);
     setSessions(next);
     writeAnalysisSessions(next);
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase || !user) return;
+    try {
+      await deleteCloudAnalysisSession(supabase, id);
+      setSyncMessage("Cloud history synced");
+    } catch (error) {
+      setSyncMessage(error instanceof Error ? `Deleted locally. Cloud delete failed: ${error.message}` : "Deleted locally. Cloud delete failed.");
+    }
   }
 
   return (
@@ -124,6 +172,20 @@ export default function HistoryPage() {
           <p className="text-3xl font-black mt-1 tabular-nums">{filtered.length}</p>
         </div>
       </div>
+
+      <section className="rounded-xl border px-4 py-3 flex flex-col gap-1 md:flex-row md:items-center md:justify-between" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div>
+          <p className="text-xs font-black uppercase" style={{ color: user ? "var(--green)" : "var(--secondary)" }}>
+            {user ? "Cloud history" : "Local history"}
+          </p>
+          <p className="text-sm" style={{ color: "var(--secondary)" }}>
+            {user ? syncMessage : "Sign in on Account to recover saved sessions across browsers."}
+          </p>
+        </div>
+        <span className="text-xs font-black px-3 py-1 rounded-lg border" style={{ borderColor: "var(--border)", color: user ? "var(--green)" : "var(--secondary)" }}>
+          {user ? "account" : "local"}
+        </span>
+      </section>
 
       <div className="grid gap-3 md:grid-cols-[1fr_auto]">
         <input

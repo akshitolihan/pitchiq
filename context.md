@@ -201,3 +201,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Applied `supabase/schema.sql` to the hosted Supabase database and verified the `profiles`, `planner_items`, `analysis_sessions`, and `alert_rules` tables exist.
 - Added the Supabase project URL and browser publishable key to the existing Vercel `pitchiq` project as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 - Kept secret database credentials out of the repository and used Vercel environment variables for deployment configuration.
+
+## 2026-07-02 - Add Supabase Planner And History Sync
+
+- Added cloud load/save support for the active Planner using the Supabase `planner_items` table while keeping local storage as an offline fallback.
+- Added Planner sync status messaging for local, loading, saving, synced, and error states.
+- Added cloud save support for saved analysis sessions from Planner using the Supabase `analysis_sessions` table.
+- Updated History to merge cloud sessions with local sessions for signed-in users and delete sessions from Supabase when possible.
+- Verified the Next.js production build after the Supabase sync changes.
