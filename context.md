@@ -234,3 +234,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Added a reusable account stats helper that reads Supabase counts and latest update timestamps for `planner_items`, `analysis_sessions`, and `alert_rules`.
 - Kept local browser storage as the fallback summary when the user is signed out or cloud stats are unavailable.
 - Verified the Next.js production build after the Account dashboard changes.
+
+## 2026-07-02 - Add Match Journal Research Notes
+
+- Added `/journal` as a structured research-note workspace for planned matches.
+- Added journal fields for model view, team news/context, risk flags, final review, and a confidence score.
+- Added local journal storage for signed-out users and Supabase sync for signed-in users using `alert_rules` records with `rule_type = 'journal'`.
+- Added Journal to the desktop sidebar, Account quick links, and each Planner item card.
+- Verified the Next.js production build after the Journal changes.

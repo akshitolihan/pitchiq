@@ -11,6 +11,7 @@ const navItems = [
   { href: "/lab",      label: "Lab",      icon: LabIcon },
   { href: "/live",    label: "Live",     icon: LiveIcon,    dot: true },
   { href: "/planner", label: "Planner",  icon: PlannerIcon },
+  { href: "/journal", label: "Journal",  icon: JournalIcon },
   { href: "/alerts",  label: "Alerts",   icon: AlertsIcon },
   { href: "/history", label: "History",  icon: HistoryIcon },
   { href: "/exports", label: "Exports",  icon: ExportIcon },
@@ -201,6 +202,17 @@ function HistoryIcon({ size, active }: { size: number; active: boolean }) {
       <path d="M3 12a9 9 0 1 0 3-6.7" />
       <path d="M3 3v6h6" />
       <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+function JournalIcon({ size, active }: { size: number; active: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-1.5z" />
+      <path d="M8 7h6" />
+      <path d="M8 11h8" />
+      <path d="M8 15h5" />
     </svg>
   );
 }

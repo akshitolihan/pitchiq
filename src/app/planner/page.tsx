@@ -547,6 +547,14 @@ export default function PlannerPage() {
                       </div>
                     </div>
 
+                    <Link
+                      href={`/journal?selection=${encodeURIComponent(selection.id)}`}
+                      className="block w-full rounded-xl px-4 py-3 text-sm font-black text-center border"
+                      style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--green)" }}
+                    >
+                      Open research journal
+                    </Link>
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {STATUS_OPTIONS.map(option => (
                         <button
