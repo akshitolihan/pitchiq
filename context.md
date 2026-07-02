@@ -194,3 +194,10 @@ For future work, every meaningful app update should be recorded in this file and
 - Updated `/account` with an Account Identity panel for Supabase sign-in/sign-up and plan sync.
 - Added `supabase/schema.sql` with profiles, planner items, analysis sessions, alert rules, RLS policies, and new-user profile creation trigger.
 - Added Supabase env placeholders to `.env.example` and `.env.local.example`.
+
+## 2026-07-02 - Connect Supabase Project To Vercel
+
+- Created the Supabase project `pitchiq` inside the `hindu-marketplace` organization.
+- Applied `supabase/schema.sql` to the hosted Supabase database and verified the `profiles`, `planner_items`, `analysis_sessions`, and `alert_rules` tables exist.
+- Added the Supabase project URL and browser publishable key to the existing Vercel `pitchiq` project as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+- Kept secret database credentials out of the repository and used Vercel environment variables for deployment configuration.
