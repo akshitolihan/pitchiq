@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBetSlip } from "@/contexts/BetSlipContext";
 import { SubscriptionPlan, useSubscription } from "@/contexts/SubscriptionContext";
+import { AccountStats, emptyAccountStats, loadCloudAccountStats } from "@/lib/account-stats";
+import { readAnalysisSessions } from "@/lib/analysis-sessions";
+import { readLocalReviewReminders } from "@/lib/alert-rules";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const planFeatures = {
   free: [
@@ -22,10 +27,61 @@ const planFeatures = {
 export default function AccountPage() {
   const { state, isPro, setPlan } = useSubscription();
   const { configured, loading, user, profile, signIn, signUp, signOut, updateSubscriptionPlan } = useAuth();
+  const { state: plannerState, cloudSyncStatus } = useBetSlip();
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authMessage, setAuthMessage] = useState<string | null>(null);
+  const [stats, setStats] = useState<AccountStats>(emptyAccountStats());
+  const [statsMessage, setStatsMessage] = useState("Local workspace summary");
+
+  useEffect(() => {
+    const localSessions = readAnalysisSessions();
+    const localReminders = readLocalReviewReminders();
+    const localStats: AccountStats = {
+      plannedItems: plannerState.selections.length,
+      savedSessions: localSessions.length,
+      activeReminders: Object.values(localReminders).filter(reminder => reminder.enabled).length,
+      lastPlannerSync: null,
+      lastHistorySync: localSessions[0]?.updatedAt ?? null,
+      lastReminderSync: Object.values(localReminders)
+        .map(reminder => reminder.updatedAt)
+        .sort()
+        .at(-1) ?? null,
+    };
+    setStats(localStats);
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase || !user) {
+      setStatsMessage("Local workspace summary");
+      return;
+    }
+
+    let cancelled = false;
+    setStatsMessage("Loading cloud workspace...");
+    loadCloudAccountStats(supabase)
+      .then(cloudStats => {
+        if (cancelled) return;
+        setStats(cloudStats);
+        setStatsMessage("Cloud workspace synced");
+      })
+      .catch(error => {
+        if (cancelled) return;
+        setStats(localStats);
+        setStatsMessage(error instanceof Error ? `Cloud summary unavailable: ${error.message}` : "Cloud summary unavailable");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [plannerState.selections.length, user]);
+
+  const lastSync = useMemo(() => {
+    return [stats.lastPlannerSync, stats.lastHistorySync, stats.lastReminderSync]
+      .filter((value): value is string => Boolean(value))
+      .sort()
+      .at(-1) ?? null;
+  }, [stats.lastHistorySync, stats.lastPlannerSync, stats.lastReminderSync]);
 
   async function submitAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -141,6 +197,62 @@ export default function AccountPage() {
         )}
       </section>
 
+      <section className="rounded-xl border p-4 md:p-5 space-y-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider" style={{ color: user ? "var(--green)" : "var(--secondary)" }}>
+              {user ? "Cloud account dashboard" : "Local account dashboard"}
+            </p>
+            <h2 className="text-lg font-black mt-1" style={{ fontFamily: "var(--font-heading)" }}>Workspace summary</h2>
+            <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
+              {statsMessage}
+            </p>
+          </div>
+          <div className="rounded-xl border px-3 py-2 text-right" style={{ background: "var(--bg)", borderColor: "var(--border)" }}>
+            <p className="text-xs font-bold uppercase" style={{ color: "var(--secondary)" }}>Sync health</p>
+            <p className="text-sm font-black mt-1" style={{ color: cloudSyncStatus === "error" ? "#EF4444" : user ? "var(--green)" : "var(--secondary)" }}>
+              {user ? cloudSyncStatus : "local"}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <MetricCard label="Planned" value={stats.plannedItems} tone="var(--green)" />
+          <MetricCard label="Sessions" value={stats.savedSessions} tone="var(--cyan, #06b6d4)" />
+          <MetricCard label="Reminders" value={stats.activeReminders} tone="var(--warning)" />
+          <MetricCard label="Mode" value={isPro ? "Pro" : "Free"} tone={isPro ? "var(--green)" : "var(--warning)"} />
+        </div>
+
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="grid gap-2 sm:grid-cols-3">
+            <SyncLine label="Planner" value={stats.lastPlannerSync} />
+            <SyncLine label="History" value={stats.lastHistorySync} />
+            <SyncLine label="Reminders" value={stats.lastReminderSync} />
+          </div>
+          <p className="text-xs lg:text-right" style={{ color: "var(--secondary)" }}>
+            Last activity: {formatSyncTime(lastSync)}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {[
+            { href: "/planner", label: "Planner" },
+            { href: "/history", label: "History" },
+            { href: "/alerts", label: "Alerts" },
+            { href: "/exports", label: "Exports" },
+          ].map(item => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-xl px-4 py-3 text-sm font-black text-center border"
+              style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--green)" }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <div className="grid gap-4 lg:grid-cols-2">
         <PlanCard
           plan="free"
@@ -196,6 +308,36 @@ export default function AccountPage() {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function formatSyncTime(value: string | null) {
+  if (!value) return "Not synced yet";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not synced yet";
+  return date.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function MetricCard({ label, value, tone }: { label: string; value: number | string; tone: string }) {
+  return (
+    <div className="rounded-xl border p-4" style={{ background: "var(--bg)", borderColor: "var(--border)" }}>
+      <p className="text-xs font-bold uppercase" style={{ color: "var(--secondary)" }}>{label}</p>
+      <p className="text-2xl font-black mt-1 tabular-nums" style={{ color: tone }}>{value}</p>
+    </div>
+  );
+}
+
+function SyncLine({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div className="rounded-xl px-3 py-2" style={{ background: "var(--bg)" }}>
+      <p className="text-xs font-bold uppercase" style={{ color: "var(--secondary)" }}>{label}</p>
+      <p className="text-sm font-black mt-1">{formatSyncTime(value)}</p>
     </div>
   );
 }

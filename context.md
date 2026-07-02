@@ -226,3 +226,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Added Alerts sync status messaging for local reminders, cloud loading, saving, synced, and sync failure states.
 - Added active-reminder counts scoped to the current Planner items.
 - Verified the Next.js production build after the Alerts reminder changes.
+
+## 2026-07-02 - Add Cloud Account Dashboard
+
+- Added a workspace summary section to `/account` with planned items, saved sessions, active reminders, access mode, sync health, and last activity.
+- Added quick links from Account to Planner, History, Alerts, and Exports so signed-in users can move through the synced workflow faster.
+- Added a reusable account stats helper that reads Supabase counts and latest update timestamps for `planner_items`, `analysis_sessions`, and `alert_rules`.
+- Kept local browser storage as the fallback summary when the user is signed out or cloud stats are unavailable.
+- Verified the Next.js production build after the Account dashboard changes.
