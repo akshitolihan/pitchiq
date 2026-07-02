@@ -218,3 +218,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Verified live `/history` loaded `Cloud history synced` with the cloud session.
 - Edited a Planner note in the live UI and confirmed the change saved back to the Supabase `planner_items` table.
 - Removed the temporary Planner/History smoke records and deleted the temporary Supabase Auth users after verification.
+
+## 2026-07-02 - Add Supabase Review Reminder Rules
+
+- Added saved review reminders to `/alerts` so each planned item can store no reminder, kickoff, 30m, 1h, 3h, or 24h before kickoff.
+- Added local reminder storage as the offline fallback and Supabase `alert_rules` load/save support for signed-in users.
+- Added Alerts sync status messaging for local reminders, cloud loading, saving, synced, and sync failure states.
+- Added active-reminder counts scoped to the current Planner items.
+- Verified the Next.js production build after the Alerts reminder changes.

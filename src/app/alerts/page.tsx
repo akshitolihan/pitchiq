@@ -1,8 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { BetSelection, PlanStatus, useBetSlip } from "@/contexts/BetSlipContext";
+import {
+  REMINDER_OPTIONS,
+  ReminderOffset,
+  ReviewReminder,
+  loadCloudReviewReminders,
+  makeReviewReminder,
+  readLocalReviewReminders,
+  saveCloudReviewReminder,
+  writeLocalReviewReminders,
+} from "@/lib/alert-rules";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AlertFilter = "all" | "urgent" | "today" | "missing-note" | "past";
 
@@ -135,7 +147,41 @@ function buildAlert(selection: BetSelection, status: PlanStatus, note: string): 
 
 export default function AlertsPage() {
   const { state, getSelectionMeta, setSelectionStatus, setSelectionNote, removeSelection } = useBetSlip();
+  const { user, loading: authLoading } = useAuth();
   const [filter, setFilter] = useState<AlertFilter>("all");
+  const [reminders, setReminders] = useState<Record<string, ReviewReminder>>({});
+  const [syncMessage, setSyncMessage] = useState("Local reminders");
+
+  useEffect(() => {
+    const localRules = readLocalReviewReminders();
+    setReminders(localRules);
+
+    const supabase = getSupabaseBrowserClient();
+    if (authLoading) return;
+    if (!supabase || !user) {
+      setSyncMessage("Local reminders");
+      return;
+    }
+
+    let cancelled = false;
+    setSyncMessage("Loading cloud reminders...");
+    loadCloudReviewReminders(supabase)
+      .then(cloudRules => {
+        if (cancelled) return;
+        const merged = { ...localRules, ...cloudRules };
+        setReminders(merged);
+        writeLocalReviewReminders(merged);
+        setSyncMessage("Cloud reminders synced");
+      })
+      .catch(error => {
+        if (cancelled) return;
+        setSyncMessage(error instanceof Error ? `Cloud reminders unavailable: ${error.message}` : "Cloud reminders unavailable");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user]);
 
   const alerts = useMemo(() => {
     return state.selections
@@ -157,6 +203,8 @@ export default function AlertsPage() {
     missing: alerts.filter(alert => alert.category === "missing-note" || (alert.note.trim().length === 0 && alert.status !== "avoid")).length,
     past: alerts.filter(alert => alert.category === "past").length,
   };
+  const activeSelectionIds = new Set(state.selections.map(selection => selection.id));
+  const activeReminderCount = Object.values(reminders).filter(reminder => reminder.enabled && activeSelectionIds.has(reminder.selectionId)).length;
 
   const filtered = alerts.filter(alert => {
     if (filter === "all") return true;
@@ -164,6 +212,30 @@ export default function AlertsPage() {
     if (filter === "missing-note") return alert.note.trim().length === 0 && alert.status !== "avoid";
     return alert.category === filter;
   });
+
+  async function setReminder(selection: BetSelection, offset: ReminderOffset) {
+    const reminder = makeReviewReminder(selection.id, offset, selection.commenceTime);
+    const nextReminders = {
+      ...reminders,
+      [selection.id]: reminder,
+    };
+    setReminders(nextReminders);
+    writeLocalReviewReminders(nextReminders);
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase || !user) {
+      setSyncMessage("Reminder saved locally");
+      return;
+    }
+
+    setSyncMessage("Saving cloud reminder...");
+    try {
+      await saveCloudReviewReminder(supabase, user.id, reminder);
+      setSyncMessage("Cloud reminders synced");
+    } catch (error) {
+      setSyncMessage(error instanceof Error ? `Reminder saved locally. Cloud sync failed: ${error.message}` : "Reminder saved locally. Cloud sync failed.");
+    }
+  }
 
   return (
     <div className="min-h-[100dvh] px-4 py-4 md:px-6 md:py-6 space-y-5">
@@ -219,6 +291,20 @@ export default function AlertsPage() {
           <p className="text-3xl font-black mt-1 tabular-nums">{counts.past}</p>
         </button>
       </div>
+
+      <section className="rounded-xl border px-4 py-3 flex flex-col gap-1 md:flex-row md:items-center md:justify-between" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div>
+          <p className="text-xs font-black uppercase" style={{ color: user ? "var(--green)" : "var(--secondary)" }}>
+            {user ? "Cloud review reminders" : "Local review reminders"}
+          </p>
+          <p className="text-sm" style={{ color: "var(--secondary)" }}>
+            {user ? syncMessage : "Sign in on Account to sync reminder rules across browsers."}
+          </p>
+        </div>
+        <span className="text-xs font-black px-3 py-1 rounded-lg border" style={{ borderColor: "var(--border)", color: user ? "var(--green)" : "var(--secondary)" }}>
+          {activeReminderCount} active
+        </span>
+      </section>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {FILTERS.map(option => {
@@ -305,6 +391,34 @@ export default function AlertsPage() {
               </div>
 
               <p className="text-sm" style={{ color: "var(--secondary)" }}>{alert.description}</p>
+
+              <div className="grid gap-2 md:grid-cols-[1fr_auto] md:items-end">
+                <label className="block">
+                  <span className="text-xs font-bold uppercase" style={{ color: "var(--secondary)" }}>Review reminder</span>
+                  <select
+                    value={reminders[alert.selection.id]?.offset ?? "none"}
+                    onChange={event => setReminder(alert.selection, event.target.value as ReminderOffset)}
+                    disabled={!alert.selection.commenceTime}
+                    className="mt-2 w-full rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
+                    style={{ background: "var(--bg)", color: "var(--white)", border: "1px solid var(--border)" }}
+                  >
+                    {REMINDER_OPTIONS.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <p className="text-xs md:text-right" style={{ color: "var(--secondary)" }}>
+                  {reminders[alert.selection.id]?.triggerAt
+                    ? new Date(reminders[alert.selection.id].triggerAt ?? "").toLocaleString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: "UTC",
+                    }) + " UTC"
+                    : alert.selection.commenceTime ? "No reminder set" : "Needs kickoff time"}
+                </p>
+              </div>
 
               <textarea
                 value={alert.note}
