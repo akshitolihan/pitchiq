@@ -21,6 +21,16 @@ type JournalField = "modelView" | "teamNews" | "riskFlags" | "finalReview";
 type ExportScope = "current" | "all";
 type ExportFormat = "markdown" | "csv";
 
+interface JournalTemplate {
+  id: string;
+  title: string;
+  label: string;
+  proOnly: boolean;
+  sport?: "football" | "tennis";
+  confidenceScore: number;
+  fields: Record<JournalField, string>;
+}
+
 const FIELD_LABELS: Array<{ key: JournalField; label: string; placeholder: string }> = [
   {
     key: "modelView",
@@ -41,6 +51,76 @@ const FIELD_LABELS: Array<{ key: JournalField; label: string; placeholder: strin
     key: "finalReview",
     label: "Final review",
     placeholder: "Final decision, what changed, and whether this stays in the plan...",
+  },
+];
+
+const JOURNAL_TEMPLATES: JournalTemplate[] = [
+  {
+    id: "football-prematch",
+    title: "Football pre-match review",
+    label: "Starter",
+    proOnly: false,
+    sport: "football",
+    confidenceScore: 55,
+    fields: {
+      modelView: "- Model probability vs market price:\n- Main edge driver:\n- Price movement to watch:\n- Minimum confidence needed before final review:",
+      teamNews: "- Expected lineup notes:\n- Injury/suspension dependency:\n- Schedule/travel context:\n- Tactical matchup note:",
+      riskFlags: "- Late lineup risk:\n- Motivation/rotation uncertainty:\n- Market overreaction risk:\n- Data gap to recheck:",
+      finalReview: "- Final decision:\n- What changed since first review:\n- Keep, downgrade, or remove from plan:\n- Recheck time:",
+    },
+  },
+  {
+    id: "risk-audit",
+    title: "Risk audit",
+    label: "Starter",
+    proOnly: false,
+    confidenceScore: 45,
+    fields: {
+      modelView: "- What the model likes:\n- What the model may be missing:\n- Sensitivity to odds movement:\n- Confidence after stress test:",
+      teamNews: "- News item that could invalidate the view:\n- Context still unverified:\n- Source or timing to recheck:\n- Alternate scenario:",
+      riskFlags: "- Primary risk:\n- Secondary risk:\n- Correlation with other planned items:\n- Reason to avoid if unresolved:",
+      finalReview: "- Final risk rating:\n- Required condition before keeping:\n- Remove if:\n- Final note:",
+    },
+  },
+  {
+    id: "tennis-prematch",
+    title: "Tennis pre-match review",
+    label: "Pro",
+    proOnly: true,
+    sport: "tennis",
+    confidenceScore: 58,
+    fields: {
+      modelView: "- Hold/break profile:\n- Surface fit:\n- Recent form signal:\n- Price sensitivity:",
+      teamNews: "- Fitness or retirement concern:\n- Schedule fatigue:\n- Head-to-head context:\n- Tournament motivation:",
+      riskFlags: "- Volatile serve pattern:\n- Small sample concern:\n- Surface mismatch uncertainty:\n- Live-only angle to consider:",
+      finalReview: "- Final lean:\n- Confidence after news check:\n- Keep or downgrade:\n- Recheck time:",
+    },
+  },
+  {
+    id: "high-confidence",
+    title: "High-confidence shortlist",
+    label: "Pro",
+    proOnly: true,
+    confidenceScore: 72,
+    fields: {
+      modelView: "- Clear model edge:\n- Agreement across drivers:\n- Why this outranks other planned items:\n- Price ceiling:",
+      teamNews: "- Confirmed context supporting the view:\n- Any remaining news dependency:\n- Match conditions:\n- Timing of final check:",
+      riskFlags: "- Main reason confidence could be overstated:\n- Tail-risk scenario:\n- Correlated exposure:\n- Downgrade trigger:",
+      finalReview: "- Final shortlist decision:\n- Confidence score rationale:\n- Action after final news:\n- Post-match learning note:",
+    },
+  },
+  {
+    id: "final-review",
+    title: "Final review",
+    label: "Pro",
+    proOnly: true,
+    confidenceScore: 60,
+    fields: {
+      modelView: "- Initial model view:\n- Current model view:\n- Change since planning:\n- Final price context:",
+      teamNews: "- Final lineup/news check:\n- Confirmed absences or returns:\n- Market reaction to news:\n- Context still unknown:",
+      riskFlags: "- Risks resolved:\n- Risks still open:\n- Reason to downgrade:\n- Reason to remove:",
+      finalReview: "- Final status:\n- Final confidence:\n- Decision timestamp:\n- Lesson to carry forward:",
+    },
   },
 ];
 
@@ -79,6 +159,7 @@ export default function JournalPage() {
   const [exportScope, setExportScope] = useState<ExportScope>("current");
   const [exportFormat, setExportFormat] = useState<ExportFormat>("markdown");
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [templateMessage, setTemplateMessage] = useState<string | null>(null);
 
   const selectedSelection = useMemo(() => {
     return state.selections.find(selection => selection.id === selectedId) ?? state.selections[0] ?? null;
@@ -170,9 +251,29 @@ export default function JournalPage() {
     setTimeout(() => setExportMessage(null), 2500);
   }
 
+  function applyTemplate(template: JournalTemplate) {
+    if (!selectedSelection) return;
+    if (template.proOnly && !isPro) {
+      setTemplateMessage("Upgrade to Pro Analysis to use this template");
+      setTimeout(() => setTemplateMessage(null), 2500);
+      return;
+    }
+
+    updateJournal(selectedSelection, journal => ({
+      ...journal,
+      ...template.fields,
+      confidenceScore: template.confidenceScore,
+    }));
+    setTemplateMessage(`${template.title} applied`);
+    setTimeout(() => setTemplateMessage(null), 2500);
+  }
+
   const completedFields = journalCompleteness(selectedJournal ?? undefined);
   const totalJournals = Object.values(journals).filter(journal => journalCompleteness(journal) > 0).length;
   const exportIncluded = isPro ? (exportScope === "current" ? Math.min(1, state.selections.length) : state.selections.length) : 1;
+  const recommendedTemplates = selectedSelection
+    ? JOURNAL_TEMPLATES.filter(template => !template.sport || template.sport === selectedSelection.sport)
+    : JOURNAL_TEMPLATES;
 
   return (
     <div className="min-h-[100dvh] px-4 py-4 md:px-6 md:py-6 space-y-5">
@@ -276,6 +377,68 @@ export default function JournalPage() {
           )}
         </div>
         {exportMessage && <p className="text-xs font-bold" style={{ color: "var(--green)" }}>{exportMessage}</p>}
+      </section>
+
+      <section className="rounded-xl border p-4 md:p-5 space-y-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider" style={{ color: isPro ? "var(--green)" : "var(--warning)" }}>
+              Research templates
+            </p>
+            <h2 className="text-lg font-black mt-1" style={{ fontFamily: "var(--font-heading)" }}>Guided note structures</h2>
+            <p className="text-sm mt-1" style={{ color: "var(--secondary)" }}>
+              Apply a repeatable checklist to the selected match, then edit the details before saving.
+            </p>
+          </div>
+          <span className="text-xs font-black px-3 py-1 rounded-lg border self-start" style={{ borderColor: "var(--border)", color: isPro ? "var(--green)" : "var(--warning)" }}>
+            {isPro ? "All templates" : "Free starters"}
+          </span>
+        </div>
+
+        <div className="grid gap-3 lg:grid-cols-3">
+          {recommendedTemplates.map(template => {
+            const locked = template.proOnly && !isPro;
+            return (
+              <article
+                key={template.id}
+                className="rounded-xl border p-4 space-y-3"
+                style={{
+                  background: locked ? "rgba(245,166,35,0.06)" : "var(--bg)",
+                  borderColor: locked ? "rgba(245,166,35,0.35)" : "var(--border)",
+                }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase" style={{ color: locked ? "var(--warning)" : "var(--green)" }}>
+                      {template.label}
+                    </p>
+                    <h3 className="font-black mt-1">{template.title}</h3>
+                  </div>
+                  <span className="text-xs font-black tabular-nums" style={{ color: "var(--secondary)" }}>
+                    {template.confidenceScore}%
+                  </span>
+                </div>
+                <p className="text-sm" style={{ color: "var(--secondary)" }}>
+                  {locked ? "Pro template for deeper repeatable analysis." : "Applies structured bullets to all journal fields."}
+                </p>
+                <button
+                  onClick={() => applyTemplate(template)}
+                  disabled={!selectedSelection}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm font-black border"
+                  style={{
+                    background: locked ? "var(--surface)" : "var(--green)",
+                    borderColor: locked ? "rgba(245,166,35,0.35)" : "var(--green)",
+                    color: locked ? "var(--warning)" : "#000",
+                    cursor: selectedSelection ? "pointer" : "not-allowed",
+                  }}
+                >
+                  {locked ? "Unlock Pro" : "Apply template"}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+        {templateMessage && <p className="text-xs font-bold" style={{ color: templateMessage.includes("Upgrade") ? "var(--warning)" : "var(--green)" }}>{templateMessage}</p>}
       </section>
 
       {state.selections.length === 0 ? (

@@ -250,3 +250,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Added Free Preview limits for journal exports and Pro Analysis full-detail exports.
 - Added a Journal Reports section to `/exports` that links users into the research-note export workflow.
 - Verified the Next.js production build after the journal export changes.
+
+## 2026-07-04 - Add Journal Research Templates
+
+- Added guided research templates inside `/journal` for repeatable match analysis.
+- Added Free Preview starter templates for football pre-match review and risk audit.
+- Added Pro Analysis templates for tennis pre-match review, high-confidence shortlist, and final review.
+- Added one-click template application that fills model view, team news/context, risk flags, final review, and confidence score for the selected planned match.
+- Verified the Next.js production build after the Journal template changes.
