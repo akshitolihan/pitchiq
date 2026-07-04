@@ -234,10 +234,11 @@ export default function AccountPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
           {[
             { href: "/planner", label: "Planner" },
             { href: "/journal", label: "Journal" },
+            { href: "/library", label: "Library" },
             { href: "/history", label: "History" },
             { href: "/alerts", label: "Alerts" },
             { href: "/exports", label: "Exports" },

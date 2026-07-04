@@ -258,3 +258,13 @@ For future work, every meaningful app update should be recorded in this file and
 - Added Pro Analysis templates for tennis pre-match review, high-confidence shortlist, and final review.
 - Added one-click template application that fills model view, team news/context, risk flags, final review, and confidence score for the selected planned match.
 - Verified the Next.js production build after the Journal template changes.
+
+## 2026-07-04 - Add Saved Research Library
+
+- Added `/library` as a searchable archive for saved Match Journal records.
+- Added filters for sport, completion status, and confidence band so users can review stronger or unfinished research faster.
+- Added journal cards with completion score, confidence score, match metadata, updated time, research snippets, and quick links back to Journal and Exports.
+- Added Free Preview library limits while Pro Analysis unlocks the full saved research archive.
+- Loaded local journals for signed-out users and merged Supabase journal records for signed-in users through existing `alert_rules` journal storage.
+- Added Library links to the desktop sidebar, Journal page, and Account dashboard.
+- Verified the Next.js production build after the Library changes.

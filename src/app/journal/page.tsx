@@ -290,6 +290,9 @@ export default function JournalPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Link href="/library" className="px-4 py-2 rounded-xl text-sm font-bold border" style={{ borderColor: "var(--border)", color: "var(--green)", background: "var(--surface)" }}>
+            Library
+          </Link>
           <Link href="/planner" className="px-4 py-2 rounded-xl text-sm font-black" style={{ background: "var(--green)", color: "#000" }}>
             Planner
           </Link>
