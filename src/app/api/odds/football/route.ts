@@ -2,10 +2,11 @@ export const dynamic = "force-dynamic";
 
 const API_KEY = process.env.ODDS_API_KEY ?? "";
 const BASE = "https://api.the-odds-api.com/v4";
+const REGIONS = process.env.ODDS_API_REGIONS ?? "eu";
 const PREFERRED_BOOKS = ["pinnacle", "betfair_ex_eu", "williamhill", "bet365", "unibet"];
 const LOCAL_API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
-const SPORTS = [
+const DEFAULT_SPORTS = [
   { key: "soccer_fifa_world_cup",         label: "FIFA World Cup 2026" },
   { key: "soccer_uefa_champs_league",     label: "UEFA Champions League" },
   { key: "soccer_epl",                    label: "Premier League" },
@@ -16,6 +17,14 @@ const SPORTS = [
   { key: "soccer_uefa_europa_league",     label: "UEFA Europa League" },
   { key: "soccer_conmebol_copa_libertadores", label: "Copa Libertadores" },
 ];
+
+const SPORTS = (process.env.ODDS_API_FOOTBALL_SPORTS ?? "")
+  .split(",")
+  .map(key => key.trim())
+  .filter(Boolean)
+  .map(key => DEFAULT_SPORTS.find(sport => sport.key === key) ?? { key, label: key.replace(/^soccer_/, "").replace(/_/g, " ") });
+
+if (SPORTS.length === 0) SPORTS.push(...DEFAULT_SPORTS);
 
 function bestOdds(bookmakers: OddsBookmaker[], market: "h2h" | "totals") {
   for (const key of PREFERRED_BOOKS) {
@@ -102,6 +111,12 @@ async function demoFixtureFallback() {
     matches,
     source: "demo-fixtures",
     demo: true,
+    provider: {
+      name: "Demo fixtures",
+      configured: false,
+      live: false,
+      reason: API_KEY ? "The Odds API returned no usable football data" : "ODDS_API_KEY is not configured",
+    },
     error: matches.length === 0 ? "Demo fixtures API unavailable or empty" : undefined,
     updatedAt: new Date().toISOString(),
   });
@@ -119,11 +134,16 @@ export async function GET() {
     // Fetch all sports in parallel, ignore failures
     const results = await Promise.allSettled(
       SPORTS.map(async ({ key, label }) => {
-        const url = `${BASE}/sports/${key}/odds?apiKey=${API_KEY}&regions=eu&markets=h2h,totals&oddsFormat=decimal`;
+        const url = `${BASE}/sports/${key}/odds?apiKey=${API_KEY}&regions=${REGIONS}&markets=h2h,totals&oddsFormat=decimal`;
         const res = await fetch(url, { next: { revalidate: 120 } });
         if (!res.ok) return [];
         const events: OddsEvent[] = await res.json();
-        return events.map(e => ({ ...e, _label: label }));
+        return events.map(e => ({
+          ...e,
+          _label: label,
+          _quotaRemaining: res.headers.get("x-requests-remaining"),
+          _quotaUsed: res.headers.get("x-requests-used"),
+        }));
       })
     );
 
@@ -151,12 +171,30 @@ export async function GET() {
         commenceTime: e.commence_time,
         homeTeam: e.home_team,
         awayTeam: e.away_team,
-        bookmaker: h2h?.bookmaker ?? "—",
+        bookmaker: h2h?.bookmaker ?? "Unavailable",
         odds: { home, draw, away, over, under, totalLine },
       };
     }).sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
 
-    return Response.json({ matches, source: "live-odds", updatedAt: new Date().toISOString() });
+    const quota = allEvents
+      .map(e => e as OddsEvent & { _quotaRemaining?: string | null; _quotaUsed?: string | null })
+      .find(e => e._quotaRemaining || e._quotaUsed);
+
+    return Response.json({
+      matches,
+      source: "live-odds",
+      demo: false,
+      provider: {
+        name: "The Odds API",
+        configured: true,
+        live: true,
+        regions: REGIONS,
+        sports: SPORTS.map(sport => sport.key),
+        requestsRemaining: quota?._quotaRemaining ?? null,
+        requestsUsed: quota?._quotaUsed ?? null,
+      },
+      updatedAt: new Date().toISOString(),
+    });
   } catch (err) {
     return demoFixtureFallback();
   }

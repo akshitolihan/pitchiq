@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 const API_KEY = process.env.ODDS_API_KEY ?? "";
 const BASE = "https://api.the-odds-api.com/v4";
+const REGIONS = process.env.ODDS_API_REGIONS ?? "eu";
 const PREFERRED_BOOKS = ["pinnacle", "betfair_ex_eu", "williamhill", "bet365", "unibet", "nordicbet", "betsson"];
 
 // Human-readable metadata for each tennis sport key
@@ -66,6 +67,10 @@ interface OddsEvent {
   away_team: string;
   bookmakers: OddsBookmaker[];
 }
+interface OddsEventWithQuota extends OddsEvent {
+  _quotaRemaining?: string | null;
+  _quotaUsed?: string | null;
+}
 
 function getBestH2H(bookmakers: OddsBookmaker[]) {
   for (const key of PREFERRED_BOOKS) {
@@ -92,12 +97,17 @@ async function fetchActiveTennisSports(tour: "atp" | "wta"): Promise<string[]> {
   } catch { return []; }
 }
 
-async function fetchTennisSport(sportKey: string): Promise<OddsEvent[]> {
+async function fetchTennisSport(sportKey: string): Promise<OddsEventWithQuota[]> {
   try {
-    const url = `${BASE}/sports/${sportKey}/odds?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+    const url = `${BASE}/sports/${sportKey}/odds?apiKey=${API_KEY}&regions=${REGIONS}&markets=h2h&oddsFormat=decimal`;
     const res = await fetch(url, { next: { revalidate: 120 } });
     if (!res.ok) return [];
-    return await res.json();
+    const events: OddsEvent[] = await res.json();
+    return events.map(event => ({
+      ...event,
+      _quotaRemaining: res.headers.get("x-requests-remaining"),
+      _quotaUsed: res.headers.get("x-requests-used"),
+    }));
   } catch { return []; }
 }
 
@@ -110,6 +120,14 @@ export async function GET(req: Request) {
       tour,
       activeSports: [],
       matches: [],
+      source: "api-key-required",
+      demo: false,
+      provider: {
+        name: "The Odds API",
+        configured: false,
+        live: false,
+        reason: "ODDS_API_KEY is not configured",
+      },
       error: "ODDS_API_KEY not configured",
       updatedAt: new Date().toISOString(),
     });
@@ -139,7 +157,7 @@ export async function GET(req: Request) {
         player1: e.home_team,
         player2: e.away_team,
         commenceTime: e.commence_time,
-        bookmaker: h2h?.bookmaker ?? "—",
+        bookmaker: h2h?.bookmaker ?? "Unavailable",
         odds: {
           p1: h2h?.outcomes[0]?.price ?? null,
           p2: h2h?.outcomes[1]?.price ?? null,
@@ -153,10 +171,22 @@ export async function GET(req: Request) {
       return new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime();
     });
 
+    const quota = allEvents.find(e => e._quotaRemaining || e._quotaUsed);
+
     return Response.json({
       tour,
       activeSports: sportKeys,
       matches,
+      source: "live-odds",
+      demo: false,
+      provider: {
+        name: "The Odds API",
+        configured: true,
+        live: true,
+        regions: REGIONS,
+        requestsRemaining: quota?._quotaRemaining ?? null,
+        requestsUsed: quota?._quotaUsed ?? null,
+      },
       updatedAt: new Date().toISOString(),
     });
   } catch (err) {

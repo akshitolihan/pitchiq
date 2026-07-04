@@ -268,3 +268,13 @@ For future work, every meaningful app update should be recorded in this file and
 - Loaded local journals for signed-out users and merged Supabase journal records for signed-in users through existing `alert_rules` journal storage.
 - Added Library links to the desktop sidebar, Journal page, and Account dashboard.
 - Verified the Next.js production build after the Library changes.
+
+## 2026-07-04 - Prepare Real Live Data Provider Integration
+
+- Standardized football and tennis odds routes around The Odds API as the first real live market-data provider.
+- Added provider metadata to `/api/odds/football` and `/api/odds/tennis` so the app can distinguish live odds, missing API keys, quota status, and demo fallback.
+- Added configurable odds regions through `ODDS_API_REGIONS` and optional football sport-key overrides through `ODDS_API_FOOTBALL_SPORTS`.
+- Hardened `/api/live-scores` so football-data.org live scores report missing `FOOTBALL_DATA_API_KEY` clearly instead of silently failing.
+- Added `/api/data-sources` as a safe diagnostics endpoint that reports configured/missing live data providers without exposing secrets.
+- Updated env examples with `ODDS_API_KEY`, `ODDS_API_REGIONS`, `ODDS_API_FOOTBALL_SPORTS`, and `FOOTBALL_DATA_API_KEY`.
+- Verified the Next.js production build after the live data provider changes.

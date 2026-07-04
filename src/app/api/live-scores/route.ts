@@ -1,20 +1,36 @@
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const apiKey = process.env.FOOTBALL_DATA_API_KEY ?? "";
+
+  if (!apiKey) {
+    return Response.json({
+      matches: [],
+      provider: {
+        name: "football-data.org",
+        configured: false,
+        live: false,
+        reason: "FOOTBALL_DATA_API_KEY is not configured",
+      },
+      error: "FOOTBALL_DATA_API_KEY not configured",
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
   try {
     // Fetch live, today's finished, and today's upcoming in parallel
     const [liveRes, finishedRes, scheduledRes] = await Promise.all([
       fetch(
         "https://api.football-data.org/v4/competitions/WC/matches?status=IN_PLAY&season=2026",
-        { headers: { "X-Auth-Token": process.env.FOOTBALL_DATA_API_KEY! }, cache: "no-store" }
+        { headers: { "X-Auth-Token": apiKey }, cache: "no-store" }
       ),
       fetch(
         "https://api.football-data.org/v4/competitions/WC/matches?status=FINISHED&season=2026",
-        { headers: { "X-Auth-Token": process.env.FOOTBALL_DATA_API_KEY! }, cache: "no-store" }
+        { headers: { "X-Auth-Token": apiKey }, cache: "no-store" }
       ),
       fetch(
         "https://api.football-data.org/v4/competitions/WC/matches?status=TIMED,SCHEDULED&season=2026",
-        { headers: { "X-Auth-Token": process.env.FOOTBALL_DATA_API_KEY! }, cache: "no-store" }
+        { headers: { "X-Auth-Token": apiKey }, cache: "no-store" }
       ),
     ]);
 
@@ -59,8 +75,25 @@ export async function GET() {
       return new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime();
     });
 
-    return Response.json({ matches });
+    return Response.json({
+      matches,
+      provider: {
+        name: "football-data.org",
+        configured: true,
+        live: true,
+      },
+      updatedAt: new Date().toISOString(),
+    });
   } catch (e) {
-    return Response.json({ matches: [], error: String(e) });
+    return Response.json({
+      matches: [],
+      provider: {
+        name: "football-data.org",
+        configured: true,
+        live: false,
+      },
+      error: String(e),
+      updatedAt: new Date().toISOString(),
+    });
   }
 }
