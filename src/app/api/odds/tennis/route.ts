@@ -1,5 +1,7 @@
 export const dynamic = "force-dynamic";
 
+import { priceForTennisPlayer } from "@/lib/tennis-odds-mapping";
+
 const API_KEY = process.env.ODDS_API_KEY ?? "";
 const BASE = "https://api.the-odds-api.com/v4";
 const REGIONS = process.env.ODDS_API_REGIONS ?? "eu";
@@ -141,6 +143,8 @@ export async function GET(req: Request) {
 
     const matches = allEvents.map(e => {
       const h2h = getBestH2H(e.bookmakers);
+      const p1 = priceForTennisPlayer(h2h?.outcomes, e.home_team);
+      const p2 = priceForTennisPlayer(h2h?.outcomes, e.away_team);
       const info = SPORT_META[e.sport_key] ?? {
         name: e.sport_key.replace(`tennis_${tour}_`, "").replace(/_/g, " "),
         level: tour === "atp" ? "ATP" : "WTA",
@@ -159,8 +163,8 @@ export async function GET(req: Request) {
         commenceTime: e.commence_time,
         bookmaker: h2h?.bookmaker ?? "Unavailable",
         odds: {
-          p1: h2h?.outcomes[0]?.price ?? null,
-          p2: h2h?.outcomes[1]?.price ?? null,
+          p1,
+          p2,
         },
       };
     }).sort((a, b) => {

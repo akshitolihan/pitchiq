@@ -286,3 +286,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Added `ODDS_API_REGIONS=eu` in Vercel so football and tennis odds requests use the EU bookmaker region by default.
 - Kept provider secrets out of git and documented only the configuration action in this recovery file.
 - Linked the local workspace to the existing Vercel `akshit-kumars-projects-54e51a6c/pitchiq` project for future deployments and env checks.
+
+## 2026-07-05 - Fix Tennis Odds Player Mapping
+
+- Fixed a live tennis odds parsing bug where player odds were assigned from The Odds API outcome array order.
+- Updated `/api/odds/tennis` to map odds by matching each outcome name to `home_team` and `away_team`, preventing reversed player prices.
+- Added `src/lib/tennis-odds-mapping.ts` as the shared name-normalized mapping helper for tennis outcomes.
+- Added `npm run test:odds` with a regression fixture where the API outcome order is intentionally reversed.
+- Verified `npm run test:odds` and the full Next.js production build after the fix.
