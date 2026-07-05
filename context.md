@@ -278,3 +278,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Added `/api/data-sources` as a safe diagnostics endpoint that reports configured/missing live data providers without exposing secrets.
 - Updated env examples with `ODDS_API_KEY`, `ODDS_API_REGIONS`, `ODDS_API_FOOTBALL_SPORTS`, and `FOOTBALL_DATA_API_KEY`.
 - Verified the Next.js production build after the live data provider changes.
+
+## 2026-07-05 - Configure Live Data Provider Secrets In Vercel
+
+- Added The Odds API key to the existing Vercel `pitchiq` project for Production, Preview, and Development environments.
+- Added football-data.org API key to the existing Vercel `pitchiq` project for Production, Preview, and Development environments.
+- Added `ODDS_API_REGIONS=eu` in Vercel so football and tennis odds requests use the EU bookmaker region by default.
+- Kept provider secrets out of git and documented only the configuration action in this recovery file.
+- Linked the local workspace to the existing Vercel `akshit-kumars-projects-54e51a6c/pitchiq` project for future deployments and env checks.
