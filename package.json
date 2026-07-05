@@ -8,7 +8,7 @@
     "generate-data": "python -m scripts.generate_static_data",
     "start": "next start",
     "lint": "next lint",
-    "test:odds": "node scripts/test-tennis-odds-mapping.mjs"
+    "test:odds": "node scripts/test-odds-mapping.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

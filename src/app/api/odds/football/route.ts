@@ -1,5 +1,7 @@
 export const dynamic = "force-dynamic";
 
+import { pointForFootballOutcome, priceForFootballOutcome } from "@/lib/football-odds-mapping";
+
 const API_KEY = process.env.ODDS_API_KEY ?? "";
 const BASE = "https://api.the-odds-api.com/v4";
 const REGIONS = process.env.ODDS_API_REGIONS ?? "eu";
@@ -158,12 +160,12 @@ export async function GET() {
       const h2h    = bestOdds(e.bookmakers, "h2h");
       const totals = bestOdds(e.bookmakers, "totals");
 
-      const home = h2h?.outcomes.find(o => o.name === e.home_team)?.price ?? null;
-      const away = h2h?.outcomes.find(o => o.name === e.away_team)?.price ?? null;
-      const draw = h2h?.outcomes.find(o => o.name === "Draw")?.price ?? null;
-      const over = totals?.outcomes.find(o => o.name === "Over")?.price ?? null;
-      const under= totals?.outcomes.find(o => o.name === "Under")?.price ?? null;
-      const totalLine = totals?.outcomes.find(o => o.name === "Over")?.point ?? 2.5;
+      const home = priceForFootballOutcome(h2h?.outcomes, e.home_team);
+      const away = priceForFootballOutcome(h2h?.outcomes, e.away_team);
+      const draw = priceForFootballOutcome(h2h?.outcomes, "Draw");
+      const over = priceForFootballOutcome(totals?.outcomes, "Over");
+      const under = priceForFootballOutcome(totals?.outcomes, "Under");
+      const totalLine = pointForFootballOutcome(totals?.outcomes, "Over", 2.5);
 
       return {
         id: e.id,

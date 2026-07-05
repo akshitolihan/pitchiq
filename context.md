@@ -294,3 +294,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Added `src/lib/tennis-odds-mapping.ts` as the shared name-normalized mapping helper for tennis outcomes.
 - Added `npm run test:odds` with a regression fixture where the API outcome order is intentionally reversed.
 - Verified `npm run test:odds` and the full Next.js production build after the fix.
+
+## 2026-07-05 - Harden Live Odds Mapping Regression Tests
+
+- Added `src/lib/football-odds-mapping.ts` so football home, draw, away, over, and under odds are mapped through explicit normalized outcome-name helpers.
+- Updated `/api/odds/football` to use the shared football mapping helper instead of inline outcome lookups.
+- Replaced the tennis-only odds test with a combined `npm run test:odds` regression suite covering reversed tennis outcome order, shuffled football 1X2 order, total-goals order, missing names, and accent-normalized player names.
+- Kept the tests focused on provider mapping rules so future API ordering changes fail locally before they can affect production.
+- Verified `npm run test:odds` and the full Next.js production build after the mapping hardening.
