@@ -72,9 +72,120 @@ interface LocalFixturesResponse {
   items?: LocalFixture[];
 }
 
+interface FootballDataMatch {
+  id: number;
+  utcDate: string;
+  status: string;
+  stage?: string;
+  homeTeam: { name: string };
+  awayTeam: { name: string };
+}
+
 function probabilityToOdds(probability?: number | null) {
   if (!probability || probability <= 0) return null;
   return Number((1 / probability).toFixed(2));
+}
+
+async function footballDataFixtureFallback(reason: string) {
+  const apiKey = process.env.FOOTBALL_DATA_API_KEY ?? "";
+
+  if (!apiKey) {
+    return Response.json({
+      matches: [],
+      source: "live-odds-empty",
+      demo: false,
+      provider: {
+        name: "The Odds API",
+        configured: true,
+        live: false,
+        regions: REGIONS,
+        reason,
+      },
+      error: "The Odds API returned no football markets and FOOTBALL_DATA_API_KEY is not configured for fixture fallback",
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  try {
+    const [liveRes, finishedRes, scheduledRes] = await Promise.all([
+      fetch("https://api.football-data.org/v4/competitions/WC/matches?status=IN_PLAY&season=2026", {
+        headers: { "X-Auth-Token": apiKey },
+        cache: "no-store",
+      }),
+      fetch("https://api.football-data.org/v4/competitions/WC/matches?status=FINISHED&season=2026", {
+        headers: { "X-Auth-Token": apiKey },
+        cache: "no-store",
+      }),
+      fetch("https://api.football-data.org/v4/competitions/WC/matches?status=TIMED,SCHEDULED&season=2026", {
+        headers: { "X-Auth-Token": apiKey },
+        cache: "no-store",
+      }),
+    ]);
+
+    const parse = async (res: Response): Promise<FootballDataMatch[]> => {
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.matches ?? [];
+    };
+
+    const [live, finished, scheduled] = await Promise.all([parse(liveRes), parse(finishedRes), parse(scheduledRes)]);
+    const todayUTC = new Date().toISOString().slice(0, 10);
+    const cutoff = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    const isToday = (match: FootballDataMatch) => new Date(match.utcDate).toISOString().slice(0, 10) === todayUTC;
+    const isUpcomingSoon = (match: FootballDataMatch) => {
+      const kickoff = new Date(match.utcDate).getTime();
+      return kickoff >= Date.now() - 3 * 60 * 60 * 1000 && kickoff <= cutoff;
+    };
+
+    const matches = [...live, ...finished.filter(isToday), ...scheduled.filter(isUpcomingSoon)]
+      .map(match => ({
+        id: `football-data-${match.id}`,
+        competition: "FIFA World Cup 2026",
+        commenceTime: match.utcDate,
+        homeTeam: match.homeTeam.name,
+        awayTeam: match.awayTeam.name,
+        bookmaker: "Fixture schedule - market odds unavailable",
+        status: match.status,
+        stage: match.stage ?? null,
+        odds: {
+          home: null,
+          draw: null,
+          away: null,
+          over: null,
+          under: null,
+          totalLine: 2.5,
+        },
+      }))
+      .sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
+
+    return Response.json({
+      matches,
+      source: "fixture-schedule",
+      demo: false,
+      provider: {
+        name: "football-data.org fixture fallback",
+        configured: true,
+        live: matches.length > 0,
+        reason,
+      },
+      warning: "Bookmaker odds are currently unavailable from The Odds API. Showing schedule fixtures with model-derived analysis only.",
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    return Response.json({
+      matches: [],
+      source: "fixture-schedule-error",
+      demo: false,
+      provider: {
+        name: "football-data.org fixture fallback",
+        configured: true,
+        live: false,
+        reason,
+      },
+      error: String(error),
+      updatedAt: new Date().toISOString(),
+    });
+  }
 }
 
 async function demoFixtureFallback() {
@@ -177,6 +288,10 @@ export async function GET() {
         odds: { home, draw, away, over, under, totalLine },
       };
     }).sort((a, b) => new Date(a.commenceTime).getTime() - new Date(b.commenceTime).getTime());
+
+    if (matches.length === 0) {
+      return footballDataFixtureFallback("The Odds API returned no football markets for the configured sports and region");
+    }
 
     const quota = allEvents
       .map(e => e as OddsEvent & { _quotaRemaining?: string | null; _quotaUsed?: string | null })

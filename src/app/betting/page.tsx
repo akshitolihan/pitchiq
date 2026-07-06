@@ -28,6 +28,11 @@ interface TennisMatch {
   bookmaker: string;
   odds: { p1: number | null; p2: number | null };
 }
+interface FootballOddsResponse {
+  matches?: FootballMatch[];
+  source?: string;
+  warning?: string;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -504,6 +509,8 @@ export default function BettingPage() {
   const [tennisTab, setTennisTab] = useState<"atp" | "wta">("atp");
 
   const [football, setFootball] = useState<FootballMatch[]>([]);
+  const [footballSource, setFootballSource] = useState("");
+  const [footballWarning, setFootballWarning] = useState("");
   const [tennisAtp, setTennisAtp] = useState<TennisMatch[]>([]);
   const [tennisWta, setTennisWta] = useState<TennisMatch[]>([]);
 
@@ -517,11 +524,15 @@ export default function BettingPage() {
 
   const fetchAll = useCallback(async () => {
     const [fbRes, atpRes, wtaRes] = await Promise.allSettled([
-      fetch("/api/odds/football", { cache: "no-store" }).then(r => r.json()),
+      fetch("/api/odds/football", { cache: "no-store" }).then(r => r.json() as Promise<FootballOddsResponse>),
       fetch("/api/odds/tennis?tour=atp", { cache: "no-store" }).then(r => r.json()),
       fetch("/api/odds/tennis?tour=wta", { cache: "no-store" }).then(r => r.json()),
     ]);
-    if (fbRes.status === "fulfilled")  setFootball(fbRes.value.matches ?? []);
+    if (fbRes.status === "fulfilled") {
+      setFootball(fbRes.value.matches ?? []);
+      setFootballSource(fbRes.value.source ?? "");
+      setFootballWarning(fbRes.value.warning ?? "");
+    }
     if (atpRes.status === "fulfilled") setTennisAtp(atpRes.value.matches ?? []);
     if (wtaRes.status === "fulfilled") setTennisWta(wtaRes.value.matches ?? []);
     setLastUpdate(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
@@ -540,6 +551,7 @@ export default function BettingPage() {
 
   const currentList = sport === "football" ? football : tennisMatches;
   const isDemoMode = football.some((match) => match.bookmaker.toLowerCase().includes("demo"));
+  const isFixtureFallback = sport === "football" && footballSource === "fixture-schedule";
 
   return (
     <div className="flex h-full" style={{ minHeight: "100dvh" }}>
@@ -615,6 +627,13 @@ export default function BettingPage() {
           <div className="px-4 py-2 border-b text-xs font-semibold"
             style={{ borderColor: "var(--border)", background: "rgba(245,166,35,0.08)", color: "var(--warning)" }}>
             MVP demo mode: seeded fixtures, model odds, virtual wallet, and match planning are enabled for testing.
+          </div>
+        )}
+
+        {isFixtureFallback && (
+          <div className="px-4 py-2 border-b text-xs font-semibold"
+            style={{ borderColor: "var(--border)", background: "rgba(245,166,35,0.08)", color: "var(--warning)" }}>
+            {footballWarning || "Bookmaker odds are unavailable right now. Showing today&apos;s schedule with model-derived analysis only."}
           </div>
         )}
 

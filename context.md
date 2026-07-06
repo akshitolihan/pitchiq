@@ -302,3 +302,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Replaced the tennis-only odds test with a combined `npm run test:odds` regression suite covering reversed tennis outcome order, shuffled football 1X2 order, total-goals order, missing names, and accent-normalized player names.
 - Kept the tests focused on provider mapping rules so future API ordering changes fail locally before they can affect production.
 - Verified `npm run test:odds` and the full Next.js production build after the mapping hardening.
+
+## 2026-07-06 - Add Football Fixture Fallback When Odds Markets Are Empty
+
+- Diagnosed that The Odds API was connected but returning zero football and tennis odds markets while football-data.org still had today's World Cup fixtures.
+- Added a football-data.org fixture fallback inside `/api/odds/football` when The Odds API returns no football markets.
+- The fallback returns today/live and next-seven-day World Cup fixtures with `source = fixture-schedule` and market odds set to unavailable.
+- Added a betting-page warning banner when schedule fixtures are shown without bookmaker odds so users understand the cards are model-derived analysis only.
+- Verified `npm run test:odds` and the full Next.js production build after the fallback change.
