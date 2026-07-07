@@ -310,3 +310,11 @@ For future work, every meaningful app update should be recorded in this file and
 - The fallback returns today/live and next-seven-day World Cup fixtures with `source = fixture-schedule` and market odds set to unavailable.
 - Added a betting-page warning banner when schedule fixtures are shown without bookmaker odds so users understand the cards are model-derived analysis only.
 - Verified `npm run test:odds` and the full Next.js production build after the fallback change.
+
+## 2026-07-07 - Hide Generated Odds For Fixture-Only Football Matches
+
+- Verified Argentina vs Egypt was coming from `source = fixture-schedule` with no bookmaker odds from The Odds API.
+- Updated football match cards so 1X2 buttons are disabled when home, draw, and away bookmaker odds are unavailable.
+- Updated football detail pages so planner actions and market groups are hidden for fixture-only matches.
+- Added a fixture-only warning on football detail pages explaining that the report is model-derived analysis only until live odds return.
+- Verified `npm run test:odds` and the full Next.js production build after the UI correction.

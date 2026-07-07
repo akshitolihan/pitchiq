@@ -179,6 +179,7 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
     weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "UTC",
   }) + " UTC";
   const isDemo = match.bookmaker.toLowerCase().includes("demo");
+  const hasBookmakerOdds = match.odds.home !== null && match.odds.draw !== null && match.odds.away !== null;
   const predLabel = pred.outcome === "Home Win" ? `${match.homeTeam} to Win` : pred.outcome === "Away Win" ? `${match.awayTeam} to Win` : "Draw";
   const recommendedSelection: BetSelection = {
     id: `${match.id}||1X2||${pred.outcome === "Home Win" ? "home" : pred.outcome === "Away Win" ? "away" : "draw"}`,
@@ -209,6 +210,13 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
         <div className="rounded-xl border px-4 py-3 text-sm"
           style={{ background: "rgba(245,166,35,0.08)", borderColor: "rgba(245,166,35,0.35)", color: "var(--warning)" }}>
           MVP demo mode: this match uses seeded model probabilities and demo odds for product testing.
+        </div>
+      )}
+
+      {!hasBookmakerOdds && (
+        <div className="rounded-xl border px-4 py-3 text-sm"
+          style={{ background: "rgba(245,166,35,0.08)", borderColor: "rgba(245,166,35,0.35)", color: "var(--warning)" }}>
+          Bookmaker odds are unavailable for this fixture right now. The report below is model-derived analysis only, so market buttons are hidden until live odds return.
         </div>
       )}
 
@@ -291,12 +299,17 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
         </div>
       </div>
 
+      {hasBookmakerOdds && (
       <ReportActionPanel
         selection={recommendedSelection}
         note={`Model report: ${predLabel}, ${pred.confidence.toFixed(0)}% confidence. Recheck lineups and market movement before kickoff.`}
       />
+      )}
 
       <ReviewChecklist />
+
+      {hasBookmakerOdds && (
+        <>
 
       {/* Market 1: 1X2 */}
       <MarketGroup title="1X2 — Match Result" description="Pick the result at full time (90 minutes)">
@@ -340,9 +353,18 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
         </div>
       </MarketGroup>
 
+        </>
+      )}
+
+      {hasBookmakerOdds ? (
       <p className="text-xs" style={{ color: "var(--secondary)" }}>
         1X2 odds: {match.bookmaker} · DC / DNB / BTTS derived from Dixon-Coles model. For analysis purposes only.
       </p>
+      ) : (
+      <p className="text-xs" style={{ color: "var(--secondary)" }}>
+        Fixture source: {match.bookmaker}. Bookmaker odds are unavailable right now. For analysis purposes only.
+      </p>
+      )}
     </div>
   );
 }

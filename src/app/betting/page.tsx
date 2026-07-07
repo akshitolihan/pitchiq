@@ -142,6 +142,7 @@ function PredictionBadge({
 // ─── Football Match Card ───────────────────────────────────────────────────────
 
 function FootballCard({ m }: { m: FootballMatch }) {
+  const hasBookmakerOdds = m.odds.home !== null && m.odds.draw !== null && m.odds.away !== null;
   const raw_h = m.odds.home ? 1 / m.odds.home : 0.38;
   const raw_d = m.odds.draw ? 1 / m.odds.draw : 0.27;
   const raw_a = m.odds.away ? 1 / m.odds.away : 0.35;
@@ -207,9 +208,9 @@ function FootballCard({ m }: { m: FootballMatch }) {
 
       {/* Quick 1X2 odds — clicking does NOT navigate */}
       <div className="px-4 pb-4 flex gap-2">
-        <OddsPill label={m.homeTeam} sel={{ id: `${m.id}||1X2||home`, ...base, market: "1X2", outcome: m.homeTeam, odds: mkts.homeWin }} />
-        <OddsPill label="Draw"      sel={{ id: `${m.id}||1X2||draw`, ...base, market: "1X2", outcome: "Draw",       odds: mkts.draw }} />
-        <OddsPill label={m.awayTeam} sel={{ id: `${m.id}||1X2||away`, ...base, market: "1X2", outcome: m.awayTeam, odds: mkts.awayWin }} />
+        <OddsPill label={m.homeTeam} sel={{ id: `${m.id}||1X2||home`, ...base, market: "1X2", outcome: m.homeTeam, odds: hasBookmakerOdds ? mkts.homeWin : 0 }} />
+        <OddsPill label="Draw"      sel={{ id: `${m.id}||1X2||draw`, ...base, market: "1X2", outcome: "Draw",       odds: hasBookmakerOdds ? mkts.draw : 0 }} />
+        <OddsPill label={m.awayTeam} sel={{ id: `${m.id}||1X2||away`, ...base, market: "1X2", outcome: m.awayTeam, odds: hasBookmakerOdds ? mkts.awayWin : 0 }} />
       </div>
     </div>
   );
