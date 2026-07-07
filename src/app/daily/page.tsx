@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BetSelection, useBetSlip } from "@/contexts/BetSlipContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { getFootballPrediction, getTennisPrediction } from "@/lib/odds-utils";
+import { hasFootballBookmakerOdds, hasTennisBookmakerOdds } from "@/lib/market-availability";
 
 interface FootballMatch {
   id: string;
@@ -234,8 +235,8 @@ export default function DailyPage() {
 
   const allIdeas = useMemo(() => {
     return [
-      ...football.map(footballIdea),
-      ...[...tennisAtp, ...tennisWta].map(tennisIdea),
+      ...football.filter(hasFootballBookmakerOdds).map(footballIdea),
+      ...[...tennisAtp, ...tennisWta].filter(hasTennisBookmakerOdds).map(tennisIdea),
     ].sort((a, b) => b.confidence - a.confidence || b.separation - a.separation);
   }, [football, tennisAtp, tennisWta]);
 

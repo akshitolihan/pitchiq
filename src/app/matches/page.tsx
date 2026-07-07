@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getFootballPrediction } from "@/lib/odds-utils";
+import { hasFootballBookmakerOdds } from "@/lib/market-availability";
 
 interface Match {
   id: string;
@@ -10,7 +11,7 @@ interface Match {
   competition: string;
   commenceTime: string;
   bookmaker?: string;
-  odds: { home: number; draw: number; away: number };
+  odds: { home: number | null; draw: number | null; away: number | null };
 }
 
 interface GroupedMatches {
@@ -32,6 +33,7 @@ function TierBadge({ tier }: { tier: "Strong" | "Moderate" | "Competitive" }) {
 }
 
 function MatchRow({ match }: { match: Match }) {
+  const hasOdds = hasFootballBookmakerOdds(match);
   const pred = getFootballPrediction(
     match.homeTeam, match.awayTeam,
     match.odds.home, match.odds.draw, match.odds.away
@@ -73,21 +75,21 @@ function MatchRow({ match }: { match: Match }) {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs" style={{ color: "var(--secondary)" }}>
-            Pick: <span style={{ color: "var(--white)" }}>{pred.teamLabel}</span>
+            {hasOdds ? <>Pick: <span style={{ color: "var(--white)" }}>{pred.teamLabel}</span></> : "Fixture only"}
           </span>
           {isDemo && (
             <span className="text-xs font-bold" style={{ color: "var(--warning)" }}>
               Demo
             </span>
           )}
-          <span className="text-xs tabular-nums" style={{ color: "var(--secondary)" }}>
+          {hasOdds && <span className="text-xs tabular-nums" style={{ color: "var(--secondary)" }}>
             {pred.confidence}%
-          </span>
+          </span>}
         </div>
       </div>
 
       {/* Probability bar */}
-      <div className="w-20 shrink-0 hidden sm:block">
+      {hasOdds && <div className="w-20 shrink-0 hidden sm:block">
         <div className="flex h-1 rounded-full overflow-hidden gap-px mb-1">
           <div style={{ width: `${pred.homeP * 100}%`, background: "var(--green)", borderRadius: 2 }} />
           <div style={{ width: `${pred.drawP * 100}%`, background: "var(--secondary)", borderRadius: 2 }} />
@@ -98,12 +100,12 @@ function MatchRow({ match }: { match: Match }) {
           <span>{Math.round(pred.drawP * 100)}%</span>
           <span>{Math.round(pred.awayP * 100)}%</span>
         </div>
-      </div>
+      </div>}
 
       {/* Tier */}
-      <div className="shrink-0">
+      {hasOdds && <div className="shrink-0">
         <TierBadge tier={pred.tier} />
-      </div>
+      </div>}
 
       <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--secondary)" }}>→</span>
     </Link>
@@ -124,6 +126,7 @@ export default function MatchesPage() {
 
   const displayed = filter === "strong"
     ? matches.filter(m => {
+        if (!hasFootballBookmakerOdds(m)) return false;
         const p = getFootballPrediction(m.homeTeam, m.awayTeam, m.odds.home, m.odds.draw, m.odds.away);
         return p.tier === "Strong";
       })
@@ -135,6 +138,7 @@ export default function MatchesPage() {
   }, {} as GroupedMatches);
 
   const strongCount = matches.filter(m => {
+    if (!hasFootballBookmakerOdds(m)) return false;
     const p = getFootballPrediction(m.homeTeam, m.awayTeam, m.odds.home, m.odds.draw, m.odds.away);
     return p.tier === "Strong";
   }).length;

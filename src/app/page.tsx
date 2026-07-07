@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getFootballPrediction, getTennisPrediction } from "@/lib/odds-utils";
+import { hasFootballBookmakerOdds, hasTennisBookmakerOdds } from "@/lib/market-availability";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -245,11 +246,13 @@ export default function HomePage() {
   }, []);
 
   const allTennis = [...tennisAtp, ...tennisWta];
+  const footballWithOdds = football.filter(hasFootballBookmakerOdds);
+  const tennisWithOdds = allTennis.filter(hasTennisBookmakerOdds);
   const totalMatches = football.length + allTennis.length;
   const isDemoMode = football.some((match) => match.bookmaker.toLowerCase().includes("demo"));
 
   // Top predictions — strong picks first, then by confidence desc
-  const topFootball = [...football]
+  const topFootball = [...footballWithOdds]
     .map(m => ({ m, pred: getFootballPrediction(m.homeTeam, m.awayTeam, m.odds.home, m.odds.draw, m.odds.away) }))
     .sort((a, b) => {
       if (a.pred.tier === b.pred.tier) return b.pred.confidence - a.pred.confidence;
@@ -258,7 +261,7 @@ export default function HomePage() {
     })
     .slice(0, 8);
 
-  const topTennis = [...allTennis]
+  const topTennis = [...tennisWithOdds]
     .map(m => ({ m, pred: getTennisPrediction(m.player1, m.player2, m.odds.p1, m.odds.p2) }))
     .sort((a, b) => b.pred.confidence - a.pred.confidence)
     .slice(0, 6);
@@ -387,6 +390,7 @@ export default function HomePage() {
         <div className="space-y-2">
           {Object.entries(fbByComp).map(([comp, matches]) => {
             const strong = matches.filter(m => {
+              if (!hasFootballBookmakerOdds(m)) return false;
               const p = getFootballPrediction(m.homeTeam, m.awayTeam, m.odds.home, m.odds.draw, m.odds.away);
               return p.tier === "Strong";
             }).length;
@@ -396,6 +400,7 @@ export default function HomePage() {
           })}
           {Object.entries(tennisByTournament).map(([name, matches]) => {
             const strong = matches.filter(m => {
+              if (!hasTennisBookmakerOdds(m)) return false;
               const p = getTennisPrediction(m.player1, m.player2, m.odds.p1, m.odds.p2);
               return p.tier === "Strong";
             }).length;

@@ -243,6 +243,8 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
         </div>
       </div>
 
+      {hasBookmakerOdds ? (
+        <>
       {/* Prediction Summary */}
       {(() => {
         const tierColor = pred.tier === "Strong" ? "var(--green)" : pred.tier === "Moderate" ? "#F59E0B" : "var(--secondary)";
@@ -298,6 +300,16 @@ export default function FootballMatchPage({ params }: { params: { id: string } }
           ))}
         </div>
       </div>
+        </>
+      ) : (
+        <div className="rounded-2xl border p-5 space-y-3" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <p className="text-xs font-black uppercase tracking-wider" style={{ color: "var(--warning)" }}>Fixture-only report</p>
+          <h2 className="text-xl font-black">No bookmaker market available</h2>
+          <p className="text-sm" style={{ color: "var(--secondary)" }}>
+            This fixture is available from the schedule feed, but live odds are not available. Pitch IQ is not showing a pick, confidence score, or market buttons until real odds return.
+          </p>
+        </div>
+      )}
 
       {hasBookmakerOdds && (
       <ReportActionPanel

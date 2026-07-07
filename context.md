@@ -318,3 +318,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Updated football detail pages so planner actions and market groups are hidden for fixture-only matches.
 - Added a fixture-only warning on football detail pages explaining that the report is model-derived analysis only until live odds return.
 - Verified `npm run test:odds` and the full Next.js production build after the UI correction.
+
+## 2026-07-07 - Add Strict Market Availability Trust Guard
+
+- Added `src/lib/market-availability.ts` with shared checks for football and tennis bookmaker odds availability.
+- Updated Home, Daily, Insights, and Matches so fixture-only records cannot become picks, strong-counts, confidence recommendations, daily ideas, or planned selections.
+- Updated football betting cards to show a neutral fixture-only state instead of prediction confidence when bookmaker odds are unavailable.
+- Updated football detail pages to replace prediction/report sections with a neutral fixture-only report when live market odds are missing.
+- Verified `npm run test:odds` and the full Next.js production build after the trust guard changes.

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BetSelection, useBetSlip } from "@/contexts/BetSlipContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { computeFootballMarkets, getFootballPrediction, getTennisPrediction } from "@/lib/odds-utils";
+import { hasFootballBookmakerOdds, hasTennisBookmakerOdds } from "@/lib/market-availability";
 
 interface FootballMatch {
   id: string;
@@ -210,8 +211,8 @@ export default function InsightsPage() {
 
   const insights = useMemo(() => {
     return [
-      ...football.map(footballInsight),
-      ...[...tennisAtp, ...tennisWta].map(tennisInsight),
+      ...football.filter(hasFootballBookmakerOdds).map(footballInsight),
+      ...[...tennisAtp, ...tennisWta].filter(hasTennisBookmakerOdds).map(tennisInsight),
     ].sort((a, b) => {
       const tierRank = { Strong: 0, Moderate: 1, Competitive: 2 };
       return tierRank[a.tier] - tierRank[b.tier] || b.confidence - a.confidence;

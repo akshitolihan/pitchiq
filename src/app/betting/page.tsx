@@ -194,17 +194,23 @@ function FootballCard({ m }: { m: FootballMatch }) {
         </div>
       </Link>
 
-      {/* Prediction */}
-      <PredictionBadge
-        label={pred.outcome === "Home Win" ? `${m.homeTeam} Win` : pred.outcome === "Away Win" ? `${m.awayTeam} Win` : "Draw"}
-        confidence={pred.confidence}
-        tier={pred.tier}
-        bars={[
-          { label: m.homeTeam.split(" ").at(-1)!, pct: pred.homeP },
-          { label: "Draw", pct: pred.drawP },
-          { label: m.awayTeam.split(" ").at(-1)!, pct: pred.awayP },
-        ]}
-      />
+      {hasBookmakerOdds ? (
+        <PredictionBadge
+          label={pred.outcome === "Home Win" ? `${m.homeTeam} Win` : pred.outcome === "Away Win" ? `${m.awayTeam} Win` : "Draw"}
+          confidence={pred.confidence}
+          tier={pred.tier}
+          bars={[
+            { label: m.homeTeam.split(" ").at(-1)!, pct: pred.homeP },
+            { label: "Draw", pct: pred.drawP },
+            { label: m.awayTeam.split(" ").at(-1)!, pct: pred.awayP },
+          ]}
+        />
+      ) : (
+        <div className="mx-4 mb-3 rounded-xl p-3 border" style={{ background: "rgba(245,166,35,0.08)", borderColor: "rgba(245,166,35,0.35)", color: "var(--warning)" }}>
+          <p className="text-xs font-black uppercase tracking-wider">Fixture only</p>
+          <p className="text-xs mt-1">Bookmaker odds are unavailable, so no pick or confidence score is shown.</p>
+        </div>
+      )}
 
       {/* Quick 1X2 odds — clicking does NOT navigate */}
       <div className="px-4 pb-4 flex gap-2">
