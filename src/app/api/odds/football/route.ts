@@ -138,6 +138,7 @@ async function footballDataFixtureFallback(reason: string) {
     };
 
     const matches = [...live, ...finished.filter(isToday), ...scheduled.filter(isUpcomingSoon)]
+      .filter(match => Boolean(match.homeTeam?.name?.trim()) && Boolean(match.awayTeam?.name?.trim()))
       .map(match => ({
         id: `football-data-${match.id}`,
         competition: "FIFA World Cup 2026",

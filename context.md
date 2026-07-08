@@ -326,3 +326,11 @@ For future work, every meaningful app update should be recorded in this file and
 - Updated football betting cards to show a neutral fixture-only state instead of prediction confidence when bookmaker odds are unavailable.
 - Updated football detail pages to replace prediction/report sections with a neutral fixture-only report when live market odds are missing.
 - Verified `npm run test:odds` and the full Next.js production build after the trust guard changes.
+
+## 2026-07-08 - Skip Unassigned Fixture Fallback Rows
+
+- Checked production live-data endpoints and confirmed The Odds API still returned no football or tennis bookmaker markets.
+- Confirmed football fallback records had no bookmaker odds and therefore should not create picks under the market availability guard.
+- Found some football-data.org fallback rows with blank/unassigned team names from future bracket slots.
+- Updated `/api/odds/football` fixture fallback to skip rows unless both home and away team names are present.
+- Verified `npm run test:odds` and the full Next.js production build after the fallback cleanup.
